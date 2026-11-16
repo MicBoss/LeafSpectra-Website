@@ -55,7 +55,7 @@ function sync() {
   queued = false;
   vals = comp.renderVals();
   apply(root, vals);
-  root.querySelectorAll('x-dc[data-dc="PhoneMockup"]').forEach((box) => {
+  root.querySelectorAll('x-dc[data-dc^="PhoneMockup"]').forEach((box) => {
     const tmpl = JSON.parse(box.dataset.propsTmpl || '{}'), props = {};
     for (const k in tmpl) { const w = whole(String(tmpl[k])); props[k] = w ? look(w, vals) : tmpl[k]; }
     apply(box, phoneVals(props));

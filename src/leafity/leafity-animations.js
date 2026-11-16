@@ -587,40 +587,6 @@ export const CLIPS = {
     },
   },
 
-  bow: {
-    label: 'Welcoming Bow', duration: 2.6,
-    sample(t, p) {
-      // a small polite bow: lean in with the hands together in front, hold, come back up with a bounce
-      const d = kf(t, [[0, 0], [0.45, 1], [1.2, 1], [1.7, 0], [2.6, 0]]), up = bump(t, 1.85, 0.16), lag = kf(t, [[0, 0], [0.6, 1], [1.35, 1], [1.95, 0], [2.6, 0]]);
-      p.lean += 0.4 * d - 0.05 * up;
-      p.rootZ += 0.05 * d;
-      p.squash += -0.05 * d + 0.07 * up;
-      p.armL += -0.22 * d; p.armR += -0.22 * d;
-      p.armLFwd += 0.75 * d; p.armRFwd += 0.75 * d;
-      p.happy += win(t, 0.35, 1.7, 0.15);
-      p.mouth += 0.35 * win(t, 0.2, 2.45, 0.3);
-      p.lookY += -0.45 * d;
-      p.sproutX += 0.22 * lag;
-      p.leafL += -0.22 * lag + 0.3 * up; p.leafR += -0.22 * lag + 0.3 * up;
-    },
-  },
-  sleepy: {
-    label: 'Sleepy', duration: 6, loop: true, idleMix: 1, fade: [1, 0.5],
-    sample(t, p) {
-      // heavy eyelids; slowly nods off, catches itself with a little start, yawns
-      const b = sin(TAU * t / 6), droop = kf(t, [[0, 0], [2.6, 1], [3.0, 1], [3.15, 0.1], [3.6, 0], [6, 0]]), jerk = bump(t, 3.12, 0.08), yawn = bump(t, 4.7, 0.35);
-      p.lid += 0.42 + 0.33 * droop - 0.3 * jerk + 0.25 * yawn;
-      p.lean += 0.03 + 0.13 * droop;
-      p.tilt += 0.05 * b + 0.04 * droop;
-      p.squash += -0.03 * droop + 0.05 * jerk + 0.04 * yawn;
-      p.wide += 0.5 * jerk;
-      p.leafL += -0.35 - 0.15 * droop + 0.3 * jerk; p.leafR += -0.3 - 0.15 * droop + 0.3 * jerk;
-      p.sproutX += 0.08 + 0.1 * droop;
-      p.armL += -0.1 + 0.4 * yawn; p.armR += -0.1 + 0.4 * yawn;
-      p.mouth += -0.2; p.mouthO += 0.6 * yawn;
-    },
-  },
-
   // ---- E. Plant-themed ------------------------------------------------------------------
   leafFlutter: {
     label: 'Leaf Flutter', duration: 2.4, overlay: true, fx: [[0.05, 'breeze']],
@@ -836,6 +802,8 @@ export function createAnimator(model, { onChange } = {}) {
       });
     },
     replay() { return api.play(current); },
+    // stop a playing layer by name (e.g. an overlay such as the farmer's 'carry'); it fades out
+    stop(name) { layers.forEach((l) => { if (l.name === name && !l.out) { l.out = true; settle(l, false); } }); },
     returnToIdle() { return api.play('idle'); },
     pause() { paused = true; emit(); },
     resume() { paused = false; emit(); },

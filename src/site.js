@@ -1,9 +1,8 @@
 // LeafSpectra website — page behaviour and "the director" for the shared 3D Leafity.
-// This is the logic class of the LeafSpectra Website page from the Claude Design project,
-// unchanged apart from module imports. index.html holds the page markup; main.js connects the two.
+// This is the logic class of the "LeafSpectra Website — Main" page in the Claude Design project,
+// unchanged apart from module imports and the test hook. index.html holds the page markup; main.js connects the two.
 import { DCLogic, React } from './runtime.js';
 // The page is ordinary HTML. This class adds the menu, the feature picker, and "the director":
-const DEBUG = typeof location !== 'undefined' && new URLSearchParams(location.search).has('leafity-debug');
 // one shared 3D Leafity (leafity.js — the same model, animator, mover, edge behaviours and
 // add-ons the character was developed with) drawn on a single fixed canvas. World units are
 // page pixels / K and the camera scrolls with the page, so whatever Leafity does stays glued
@@ -32,6 +31,11 @@ const SPOTS = { home: ['hero-stage', 0.86], features: ['feat-spot', 0.9], leafit
 const TAPS = { how: ['happyHop', 'giggle', 'celebrate', 'wave', 'surprised', 'spin', 'slide'], about: ['giggle', 'wave', 'surprised', 'spin', 'happyHop', 'nod'] };
 const rnd = (a, b) => a + Math.random() * (b - a);
 const clampN = (x, a, b) => Math.min(b, Math.max(a, x));
+// genuine screenshots from the Android app, shown for the features they actually picture
+const SHOTS = {
+  guide: ['hand-drawn-garden/assets/app/garden-shelf.jpg', 'The Garden screen of the LeafSpectra Android app: a shelf of potted plants and the next care step for one of them.'],
+  leafity: ['hand-drawn-garden/assets/app/ask-leafity.jpg', 'The Ask Leafity screen of the LeafSpectra Android app: Leafity on a shelf, a speech bubble, and plants to chat about.'],
+};
 
 export class Component extends DCLogic {
   state = { menu: false, feat: 0, noWebgl: false };
@@ -47,36 +51,36 @@ export class Component extends DCLogic {
   tween = null;
   groundY = null;
   anchor = null;
-  activeAt = performance.now();
 
   componentDidMount() {
+    // gentle scroll reveals, independent of the 3D layer (skipped under reduced motion: everything is shown)
+    const root = this.rootRef.current;
+    if (root && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+      root.classList.add('jr-anim');
+      const io = this.io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -6% 0px' });
+      root.querySelectorAll('.jr-reveal,.jr-fade').forEach((el) => io.observe(el));
+    }
     // start the 3D layer after first paint so the text is never held up by it
-    this.boot = setTimeout(() => this.start().catch((e) => { console.error(e); this.say(); if (!this.dead) this.setState({ noWebgl: true }); }), 150);
-    // the hero speech bubble appears when Leafity "says" it (never later than 9 s, whatever happens)
-    if (this.rootRef.current) this.rootRef.current.dataset.say = 'wait';
-    this.sayT = setTimeout(() => this.say(), 9000);
+    this.boot = setTimeout(() => this.start().catch((e) => { console.error(e); if (!this.dead) this.setState({ noWebgl: true }); }), 150);
   }
 
   componentWillUnmount() {
     this.dead = true;
     this.seq++;
     this.cancelPauses();
-    clearTimeout(this.boot); clearTimeout(this.sayT); clearTimeout(this.settleT); clearTimeout(this.resizeT); clearTimeout(this.visitT);
+    if (this.io) this.io.disconnect();
+    clearTimeout(this.boot); clearTimeout(this.settleT); clearTimeout(this.resizeT); clearTimeout(this.visitT);
     cancelAnimationFrame(this.raf);
     (this.off || []).forEach((f) => f());
     document.body.style.cursor = '';
     if (window.leafitySite === this.debug) delete window.leafitySite;
+    if (this.garden) this.garden.dispose();
     if (this.ch) this.ch.dispose();
     if (this.blob) { this.blob.geometry.dispose(); this.blob.material.dispose(); }
     if (this.renderer) this.renderer.dispose();
   }
 
   q(name) { return this.rootRef.current.querySelector('[data-ls="' + name + '"]'); }
-  // the menu shows where the visitor is, like the app's tab bar
-  markNav(id) {
-    this.rootRef.current.querySelectorAll('.ls-links a:not(.cta)').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + id));
-  }
-  say() { const el = this.rootRef.current && this.q('hero-say'); if (el) el.classList.add('on'); }
   qa(name) { return Array.from(this.rootRef.current.querySelectorAll('[data-ls="' + name + '"]')); }
   // random choice that is never the same twice in a row for the same purpose
   pick(key, list) {
@@ -108,6 +112,13 @@ export class Component extends DCLogic {
       canvasRect: () => ({ left: 0, top: 0 }),
     });
     scene.add(ch.object);
+    // EXPERIMENT: farmer hat, hand-held tools and their particles (hand-drawn-garden/leafity-garden.js)
+    this.garden = (await import('./leafity/leafity-garden.js')).createGarden(THREE, ch);
+    // the gardening moments themselves — the same module the Leafity Animation Studio plays
+    this.FARM = await import('./leafity/leafity-farm.js');
+    this.FARM.registerFarmClips(ch.animator);
+    // the section behaviours (cards, garden path, FAQ, download) — also listed in the Animation Studio
+    this.SECT = await import('./leafity/leafity-sections.js');
     // soft contact shadow (no shadow maps: cheaper on phones)
     this.blob = new THREE.Mesh(new THREE.CircleGeometry(1, 24), new THREE.MeshBasicMaterial({ color: 0x5b3a1e, transparent: true, opacity: 0, depthWrite: false }));
     scene.add(this.blob);
@@ -119,20 +130,16 @@ export class Component extends DCLogic {
     const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); return () => t.removeEventListener(ev, fn, o); };
     let down = null, lastHover = 0;
     this.off = [
-      on(window, 'scroll', () => { this.scrolledAt = this.activeAt = performance.now(); this.watch(); }, { passive: true, capture: true }),
-      on(document, 'keydown', () => { this.activeAt = performance.now(); }),
-      on(document, 'click', (e) => { if (e.target.closest && e.target.closest('a[download]')) this.cheer(); }),
-      on(this.rootRef.current, 'toggle', (e) => { if (e.target.tagName === 'DETAILS' && e.target.open) this.faqReact(e.target); }, true),
+      on(window, 'scroll', () => { this.scrolledAt = performance.now(); this.watch(); }, { passive: true, capture: true }),
       on(window, 'resize', () => { clearTimeout(this.resizeT); this.resizeT = setTimeout(() => { this.frameCamera(true); this.enter(this.active); }, 250); }),
       on(document, 'visibilitychange', () => this.plan(true)),
-      on(document, 'pointerdown', (e) => { this.activeAt = performance.now(); down = { x: e.clientX, y: e.clientY }; }, { passive: true }),
+      on(document, 'pointerdown', (e) => { down = { x: e.clientX, y: e.clientY }; }, { passive: true }),
       on(document, 'pointerup', (e) => {
         if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 8) return;
         if (e.target.closest && e.target.closest('a,button,summary,input,label')) return;
         if (this.hit(e.clientX, e.clientY)) this.tapLeafity();
       }),
       on(document, 'pointermove', (e) => {
-        this.activeAt = performance.now();
         if (e.pointerType === 'touch' || performance.now() - lastHover < 120) return;
         lastHover = performance.now();
         const over = this.hit(e.clientX, e.clientY);
@@ -149,10 +156,13 @@ export class Component extends DCLogic {
       this.frame(dt);
     };
     this.raf = requestAnimationFrame(tick);
-    this.debug = { director: () => this, state: () => this.mode, headerVisit: (v) => this.visit('header', v, true), surprise: (v, size) => this.visit('surprise', v, true, size), last: () => this.lastSurprise, visiting: () => !!this.visiting, character: ch };
-    if (DEBUG) window.leafitySite = this.debug; // test hooks: only with ?leafity-debug in the URL
+    this.debug = { director: () => this, act: (k, o) => this.heroAct(k, o), home: () => ({ dx: this.anchorDX || 0 }), state: () => this.mode, section: (id) => { this.forceAct = id; this.cancelPauses(); return 'Queued: ' + id; }, headerVisit: (v) => this.visit('header', v, true), surprise: (v, size) => this.visit('surprise', v, true, size), last: () => this.lastSurprise, visiting: () => !!this.visiting, character: ch };
+    if (import.meta.env.DEV) window.leafitySite = this.debug; // test hooks: only in the Vite dev server, never in the production build
     this.watch(true);
     this.plan(true);
+    // FAQ: Leafity thinks along when a question opens ('toggle' does not bubble, so listen while capturing)
+    const faq = this.q('faq-list');
+    if (faq) this.off.push(on(faq, 'toggle', (e) => { if (e.target.open) this.faqPoke(); }, true));
   }
 
   // Camera: straight on, scrolled with the page, sized so 1 world unit = K page pixels at z = 0.
@@ -188,9 +198,10 @@ export class Component extends DCLogic {
     // standing in a spot: stay on it even if the layout shifts (sticky column, an answer opening)
     if (this.anchor && !ch.mover.moving) {
       const r = this.anchor.getBoundingClientRect();
-      if (r.width) { const p = ch.mover.screenToWorld(r.left + r.width / 2, r.bottom, 0); o.position.x = p.x; o.position.y = p.y; this.groundY = p.y; }
+      if (r.width) { const p = ch.mover.screenToWorld(r.left + r.width * (0.5 + (this.anchorDX || 0)), r.bottom, 0); o.position.x = p.x; o.position.y = p.y; this.groundY = p.y; }
     }
     ch.update(dt);
+    if (this.garden) this.garden.update(dt);
     // contact shadow under the feet while standing
     const s = o.scale.x, up = this.groundY == null ? 9 : (o.position.y - this.groundY) / s;
     const show = this.groundY != null && s > 0.2 && Math.abs(o.rotation.z) < 0.5;
@@ -214,7 +225,6 @@ export class Component extends DCLogic {
   tapLeafity() {
     const ch = this.ch, id = this.active;
     if (!ch || this.visiting) return;
-    if (id === 'how' && this.howJump) return; // mid-air over the pebble: let it land
     if (id === 'how' || id === 'about') {
       // one reaction at a time; extra taps while it reacts (or while one is waiting) are ignored
       if (this.tapBusy || this.tapQueued) return;
@@ -227,7 +237,12 @@ export class Component extends DCLogic {
     }
     if (ch.mover.moving) return;
     if (id === 'footer') { ch.playAnimation('wakeUp').then((ok) => ok && ch.playAnimation('wave')); return; }
-    if (id === 'home') { if (this.mode !== 'sleepy') ch.playAnimation('happyHop'); return; }
+    if (id === 'home') {
+      // while farming, a tap gets hearts instead of a hop (the gardening animation keeps control)
+      if (this.farming) { if (performance.now() - (this.heartAt || 0) > 1500) { this.heartAt = performance.now(); ch.showAddon('hearts'); } return; }
+      this.heroTapAt = performance.now(); ch.playAnimation('happyHop'); return;
+    }
+    if (id === 'leafity' && this.farming) { if (performance.now() - (this.heartAt || 0) > 1500) { this.heartAt = performance.now(); ch.showAddon('hearts'); } return; }
     if (id === 'leafity') { this.flip = !this.flip; ch.playAnimation(this.flip ? 'wave' : 'happyHop'); return; }
     ch.react();
   }
@@ -252,7 +267,7 @@ export class Component extends DCLogic {
     if (id === this.pending) return;
     this.pending = id;
     clearTimeout(this.settleT);
-    this.settleT = setTimeout(() => { if (this.dead) return; this.markNav(id); if (id !== this.active) this.enter(id); }, now ? 0 : 350);
+    this.settleT = setTimeout(() => { if (!this.dead && id !== this.active) this.enter(id); }, now ? 0 : 350);
   }
 
   // ---- placement helpers ------------------------------------------------------------------
@@ -261,6 +276,8 @@ export class Component extends DCLogic {
     if (this.tween) { const t = this.tween; this.tween = null; t.res(false); }
     this.ch.mover.place({ x: -60, y: this.cam.position.y, z: 0 }, { scale: 0.001, heading: 0 });
     this.ch.followPointer(false); this.ch.setAmbient(false); this.ch.animator.clearLook();
+    if (this.garden) this.garden.clear();
+    if (this.ch.animator.stop) this.ch.animator.stop('carry');
   }
   // Stand at the bottom centre of an element, sized to fit it, and stay attached to it.
   stand(el, frac = 0.9, grow = true) {
@@ -268,7 +285,7 @@ export class Component extends DCLogic {
     const r = el.getBoundingClientRect(), s = Math.min(r.height * frac, r.width * 0.9) / (1.9 * K);
     const p = this.ch.mover.screenToWorld(r.left + r.width / 2, r.bottom, 0);
     this.ch.mover.place({ x: p.x, y: p.y, z: 0 }, { scale: grow ? 0.001 : s, heading: 'camera' });
-    this.groundY = p.y; this.anchor = el;
+    this.groundY = p.y; this.anchor = el; this.anchorDX = 0;
     return s;
   }
   scaleTo(to, dur, back) {
@@ -282,7 +299,12 @@ export class Component extends DCLogic {
   // The running strip under the steps: Leafity's size, the ground line, and how far it may go.
   howGeom() {
     const mv = this.ch.mover, r = this.q('how-path').getBoundingClientRect(), s = Math.min(0.85, r.height * 0.8 / (1.9 * K)), m = 1.05 * s * K + 6;
-    return { s, y: mv.screenToWorld(0, r.bottom - 15, 0).y, L: mv.screenToWorld(r.left + m, 0, 0).x, R: mv.screenToWorld(r.right - m, 0, 0).x };
+    const wx = (px) => mv.screenToWorld(px, 0, 0).x;
+    const markers = this.qa('how-marker').map((e) => { const b = e.getBoundingClientRect(); return wx(b.left + b.width / 2); });
+    // the steps count as stops only while they sit side by side (one row); stacked on phones they don't
+    const sr = this.qa('how-step').map((e) => e.getBoundingClientRect()), row = sr.length > 1 && sr.every((b) => Math.abs(b.top - sr[0].top) < 30);
+    const steps = row ? sr.map((b) => { const w = mv.screenToWorld(b.left + b.width / 2, b.top + b.height / 2, 0); return { x: w.x, y: w.y }; }) : [];
+    return { s, y: mv.screenToWorld(0, r.bottom - 15, 0).y, L: wx(r.left + m), R: wx(r.right - m), markers, steps };
   }
   // The cards Leafity can stand on: those in the top row, which have open space above them.
   aboutGeom() {
@@ -291,13 +313,14 @@ export class Component extends DCLogic {
     const vine = this.q('about-vine'), roof = vine ? vine.getBoundingClientRect().bottom + 12 : this.q('about-head').getBoundingClientRect().bottom;
     const row = cards.filter((c) => Math.abs(c.top - cards[0].top) < 20), space = row[0].top - roof; // Leafity's head and leaves stay below the vine
     const s = clampN(Math.min(space / (2.3 * K), row[0].width * 0.7 / (2.1 * K)), 0.4, 0.62);
-    return { s, stops: row.map((c) => { const p = mv.screenToWorld(c.left + c.width / 2, c.top, 0); return { x: p.x, y: p.y, half: c.width / 2 / K, cy: p.y - c.height / 2 / K }; }) };
+    const els = this.qa('about-card'), mid = (e) => { const b = e && e.getBoundingClientRect(); return b && b.width ? mv.screenToWorld(b.left + b.width / 2, b.top + b.height / 2, 0) : null; };
+    return { s, stops: row.map((c) => { const p = mv.screenToWorld(c.left + c.width / 2, c.top, 0), el = els[cards.indexOf(c)];
+      return { x: p.x, y: p.y, half: c.width / 2 / K, cy: p.y - c.height / 2 / K, plant: mid(el.querySelector('[data-ls="about-plant"]')), detail: mid(el.querySelector('[data-ls="about-detail"]')) }; }) };
   }
 
   // Quietly put Leafity where it belongs, with no entrance and no roaming (reduced motion).
   rest(id) {
     const ch = this.ch, fine = matchMedia('(pointer: fine)').matches;
-    if (id === 'home') this.say();
     ch.returnToIdle();
     this.hide();
     if (id === 'how') { const g = this.howGeom(); ch.mover.place({ x: (g.L + g.R) / 2, y: g.y, z: 0 }, { scale: g.s, heading: 'camera' }); this.groundY = g.y; return; }
@@ -338,23 +361,16 @@ export class Component extends DCLogic {
       if (!el || !el.getBoundingClientRect().width) return;
       await ok(this.scaleTo(this.stand(el, spot[1]), 0.3, true));
       if (id === 'home') {
-        if (fresh) {
-          await ok(A.play('lookAround')); await ok(A.play('greeting'));
-          // "says" the bubble, then glances up at it with a little nod
-          this.say();
-          A.setLook(0.75, 0.55, 0.6); await ok(A.play('nod')); await ok(this.pause(0.5)); A.clearLook();
-        } else this.say();
+        if (fresh) { await ok(A.play('lookAround')); await ok(A.play('greeting')); }
         ch.setAmbient(true); ch.followPointer(fine);
-        await this.homeIdle(k);
+        await this.heroLoop(k);
       } else if (id === 'features') {
         if (fresh) await ok(A.play(FEATURES[this.state.feat].clip));
-        await this.benchLoop(k, id);
       } else if (id === 'leafity') {
-        if (fresh) await ok(A.play(this.pick('meet-hello', ['bow', 'wave'])));
+        if (fresh) await ok(A.play('wave'));
         ch.setAmbient(true); ch.followPointer(fine);
       } else if (id === 'download') {
         if (fresh) await ok(A.play(this.props.apkUrl && !(this.props.apkIsTest ?? true) ? 'celebrate' : 'wave'));
-        await this.benchLoop(k, id);
       } else if (id === 'faq') {
         await this.faqLoop(k);
       } else if (id === 'footer') {
@@ -363,70 +379,132 @@ export class Component extends DCLogic {
     } catch (e) { if (e) console.error(e); }
   }
 
-  // Hero: after a long quiet spell (no pointer, key or scroll activity) Leafity gets sleepy —
-  // heavy eyelids, nodding off — and wakes up with a stretch as soon as the visitor is back.
-  async homeIdle(k) {
-    const ch = this.ch, A = ch.animator, fine = matchMedia('(pointer: fine)').matches;
-    const after = Math.max(15, +(this.props.sleepyAfterSeconds ?? 40) || 40) * 1000;
+  // ==== EXPERIMENT — the hand-drawn garden hero ===========================================
+  // Leafity lives on the illustrated shelf. Its HOME is the middle of the hero spot
+  // (anchorDX = 0); every activity starts there and ends there. Every 9–15 s of calm it does one
+  // thing: a plant visit or a little wander, or — now and then — a gardening moment in its straw
+  // farmer hat (watering ≥ 45 s apart, hoeing ≥ 80 s apart, inspection, proud pose, plant
+  // surprise, rest). The moments come from hand-drawn-garden/leafity-farm.js (shared with the
+  // Animation Studio); they always end with props off and Leafity walked back home. Only one runs
+  // at a time (this.farming). An interruption (scrolling away, a header visit) ends it at once;
+  // Leafity is put back on its home spot when the hero is entered again.
+  heroScene(k) {
+    const ch = this.ch, mv = ch.mover, A = ch.animator, o = ch.object, fine = matchMedia('(pointer: fine)').matches;
+    const spot = this.q('hero-stage'), tom = this.q('hero-tomato'), egg = this.q('hero-eggplant'), tray = this.q('hero-tray');
+    if (!spot || !tom || !egg) return null;
     const alive = () => k === this.seq && !this.dead;
+    const pot = (b) => b.width * 55 / 240; // half a pot's width inside the plant drawings
+    const geo = () => {
+      const r = spot.getBoundingClientRect(), tp = tom.getBoundingClientRect(), ep = egg.getBoundingClientRect(), tr = tray && tray.getBoundingClientRect().width ? tray.getBoundingClientRect() : null, half = 0.8 * o.scale.x * K;
+      return { r, half, tp, ep, tr, L: tp.left + tp.width / 2 + pot(tp) + half, R: ep.left + ep.width / 2 - pot(ep) - half, tx: tp.left + tp.width / 2, ex: ep.left + ep.width / 2,
+        y: mv.screenToWorld(0, r.bottom, 0).y, wx: (px) => mv.screenToWorld(px, 0, 0).x };
+    };
+    // stay glued to the shelf at the new spot (the frame loop follows the layout while standing)
+    const settle = () => { const g = geo(), sx = mv.worldToScreen({ x: o.position.x, y: o.position.y, z: 0 }).x; this.anchorDX = (sx - (g.r.left + g.r.width / 2)) / g.r.width; };
+    // walk (or hop) along the shelf to world x
+    const go = async (x, hop) => {
+      const g = geo(), t = { x, y: g.y, z: 0 };
+      this.mode = 'moving';
+      ch.followPointer(false); ch.setAmbient(false);
+      // record the new spot the moment the feet land, before turning back to the camera
+      const done = hop ? await mv.jumpTo(t, { height: 0.32 }) : await mv.walkTo(t, { face: false });
+      settle();
+      if (done && alive() && !hop) await mv.faceCamera();
+      return done && alive();
+    };
+    // back to the home spot (the middle of the hero spot); afterwards home is exactly anchorDX = 0
+    const home = async () => {
+      if (Math.abs(this.anchorDX || 0) < 0.004) { this.anchorDX = 0; return true; }
+      const g = geo(), ok = await go(g.wx(g.r.left + g.r.width / 2));
+      if (ok) this.anchorDX = 0;
+      return ok;
+    };
+    const calm = () => { if (!alive()) return; this.mode = 'idle'; A.clearLook(); mv.faceCamera(); ch.setAmbient(true); ch.followPointer(fine); };
+    // a point of the page in world units (e.g. the soil of a pot)
+    const at = (b, fx, fy) => { const w = mv.screenToWorld(b.left + b.width * fx, b.top + b.height * fy, 0); return new this.THREE.Vector3(w.x, w.y, 0); };
+    // the soil line inside each drawing (tomato with its trellis: 480 tall from y = -180; eggplant: 300 tall)
+    const SOIL = { tomato: (214 + 150) / 450, eggplant: 214 / 300 };
+    const env = {
+      alive, calm, home, go,
+      pause: (sec) => this.pause(sec),
+      face: (x, amount = 0.3) => mv.turnTo(mv.headingToward({ x, y: o.position.y, z: 0 }, amount), 0.45),
+      target: (plant) => {
+        const g = geo(), left = plant === 'tomato';
+        return { left, px: g.wx(left ? g.tx : g.ex), near: g.wx(left ? g.L : g.R), water: g.wx(left ? g.L + 0.45 * g.half : g.R - 0.45 * g.half), soil: at(left ? g.tp : g.ep, 0.5, SOIL[left ? 'tomato' : 'eggplant']) };
+      },
+      tray: () => {
+        const g = geo();
+        return g.tr ? { stand: g.wx(g.tr.right + 0.26 * g.tr.width + 0.5 * g.half), mid: g.wx(g.tr.left + g.tr.width * 0.6), x0: at(g.tr, 0.08, 0).x, x1: at(g.tr, 0.92, 0).x, soilY: at(g.tr, 0.5, 14 / 86).y } : null;
+      },
+      nudge: (name, cls) => this.nudge(name === 'tomato' ? tom : name === 'eggplant' ? egg : tray, cls),
+    };
+    return { ch, mv, A, o, alive, geo, go, home, calm, env };
+  }
+  // a one-off CSS reaction on a drawing (no timers: the class goes when its animation ends)
+  nudge(el, cls) {
+    if (!el || this.reduced) return;
+    el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
+    el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+  }
+  async heroLoop(k) {
+    const S = this.heroScene(k);
+    if (!S) return;
+    const { mv, A, o, alive, geo, go, home, calm } = S;
     while (alive()) {
-      await this.pause(2);
+      await this.pause(rnd(9, 15));
       if (!alive()) return;
-      if (performance.now() - this.activeAt < after || ch.mover.moving || A.current !== 'idle') continue;
-      const since = this.activeAt;
-      this.mode = 'sleepy';
-      ch.followPointer(false); ch.setAmbient(false); A.clearLook();
-      A.play('sleepy');
-      while (alive() && this.activeAt === since) await this.pause(0.4);
-      if (!alive()) return;
-      this.mode = 'idle';
-      await A.play('wakeUp');
-      if (!alive()) return;
-      ch.setAmbient(true); ch.followPointer(fine);
+      if (this.farming || this.tapBusy || this.visiting || mv.moving || A.current !== 'idle') continue;
+      // safety net: between activities Leafity is always at home
+      if (Math.abs(this.anchorDX || 0) > 0.004) { this.farming = 'home'; try { await home(); } finally { this.farming = null; calm(); } continue; }
+      // the occasional gardening moment
+      const now = performance.now(), since = (t) => now - (t || -1e9), r = Math.random();
+      let farm = null;
+      if (since(this.waterAt) > 45000 && r < 0.18) farm = 'water';
+      else if (since(this.hoeAt) > 80000 && r < 0.27) farm = 'hoe';
+      else if (since(this.farmAt) > 25000 && r < 0.42) farm = this.pick('farm-small', ['inspect', 'proud', 'rustle', 'rest']);
+      if (farm) { await this.farm(k, farm); continue; }
+      // everyday shelf life: a plant visit, or a little wander (both end back home)
+      const g = geo();
+      if (g.R - g.L < 30) continue;
+      const what = this.pick('hero', ['visit', 'wander', 'visit']);
+      if (what === 'visit') { await this.farm(k, 'visit'); continue; }
+      await this.wander(k);
     }
   }
-  // Features and Download: Leafity keeps the bench company — now and then it sits on the edge
-  // for a while, sways its leaves, inspects the preview or glances around. One thing at a time.
-  async benchLoop(k, id) {
-    const ch = this.ch, A = ch.animator, alive = () => k === this.seq && !this.dead;
-    while (alive()) {
-      await this.pause(rnd(6, 11));
-      if (!alive()) return;
-      if (this.cheering || ch.mover.moving || A.current !== 'idle') continue;
-      const what = this.pick('bench-' + id, ['sit', 'flutter', 'inspect', 'glance', 'sit']);
-      this.mode = what === 'sit' ? 'sitting' : 'idle';
-      if (what === 'sit') {
-        A.play('sit', { params: { flat: true } });
-        await this.pause(rnd(6, 10));
-        if (alive() && A.current === 'sit') A.returnToIdle();
-      } else if (what === 'flutter') await A.play('leafFlutter', { fx: false });
-      else if (what === 'inspect') await A.play('inspect');
-      else { A.setLook(id === 'download' ? -0.8 : 0.8, rnd(-0.2, 0.3), 0.6); await this.pause(1.6); A.clearLook(); }
-      this.mode = 'idle';
-    }
-  }
-  // A download click: a short celebratory dance (Download section) or a cheer (hero). 8 s cooldown.
-  async cheer() {
-    const ch = this.ch, now = performance.now();
-    if (!ch || this.visiting || this.reduced || this.cheering || now - (this.cheerAt || 0) < 8000) return;
-    if ((this.active !== 'download' && this.active !== 'home') || ch.mover.moving || ch.object.scale.x < 0.05) return;
-    this.cheerAt = now; this.cheering = true;
-    const k = this.seq, A = ch.animator;
+  async wander(k) {
+    const S = this.heroScene(k);
+    if (!S || this.farming) return;
+    const { mv, A, o, alive, geo, go, home, calm } = S, g = geo();
+    const px = g.L + rnd(0.15, 0.85) * (g.R - g.L);
+    if (Math.abs(px - mv.worldToScreen(o.position).x) < 40) return;
+    this.farming = 'wander';
     try {
-      this.mode = 'reacting';
-      if (this.active === 'download') { A.play('dance'); await this.pause(2.4); if (k !== this.seq) return; }
-      await A.play('celebrate');
-      if (k === this.seq) { A.returnToIdle(); this.mode = 'idle'; }
-    } finally { this.cheering = false; }
+      if (await go(g.wx(px), Math.random() < 0.35)) { await A.play('lookAround'); if (alive()) await this.pause(0.6); }
+      if (alive()) await home();
+    } finally { this.farming = null; calm(); }
   }
-  // FAQ: opening a question gets a small reaction from the companion (one at a time, 3.5 s apart).
-  faqReact(d) {
-    const ch = this.ch, now = performance.now();
-    if (!ch || this.active !== 'faq' || this.visiting || this.reduced || now - (this.faqAt || 0) < 3500) return;
-    if (ch.mover.moving || ch.object.scale.x < 0.05) return;
-    this.faqAt = now;
-    const q = (d.querySelector('summary') || d).textContent;
-    ch.playAnimation(/diagnose/i.test(q) ? 'think' : /download|install|android/i.test(q) ? 'discover' : this.pick('faq-react', ['nod', 'curiousTilt', 'love', 'nod']));
+  // One gardening moment (or a plant visit), from the shared farmer module.
+  async farm(k, what, opt) {
+    if (this.farming || !this.garden || !this.FARM) return false;
+    const S = this.heroScene(k);
+    if (!S) return false;
+    this.farming = what; this.farmAt = performance.now();
+    if (what === 'water') this.waterAt = this.farmAt;
+    if (what === 'hoe') this.hoeAt = this.farmAt;
+    try { return await this.FARM.createFarmer(this.ch, this.garden, S.env).run(what, opt); }
+    finally { this.farming = null; }
+  }
+  // Developer-only trigger for the test controls and window.leafitySite.act().
+  heroAct(kind, opt) {
+    if (!this.ch || !this.garden) return 'The 3D view is not running.';
+    if (this.reduced) return 'Reduced motion is on: gardening animations are off.';
+    if (kind === 'surprise' || kind === 'header') { if (this.visiting) return 'Busy — try again in a moment.'; this.visit(kind, null, true); return 'Started: ' + kind + '.'; }
+    if (this.active !== 'home') return 'Scroll to the hero first.';
+    if (this.visiting || this.farming || this.tapBusy || this.ch.mover.moving) return 'Busy — try again in a moment.';
+    this.cancelPauses();
+    if (kind === 'wander') { this.wander(this.seq).catch(() => {}); return 'Started: wander.'; }
+    this.farm(this.seq, kind, opt).catch(() => {});
+    return 'Started: ' + kind + (opt ? ' (' + opt + ')' : '') + '.';
   }
 
   // FAQ: a large, calm companion. Watches the questions, tilts, sways its leaves, glances at the visitor.
@@ -439,7 +517,16 @@ export class Component extends DCLogic {
     };
     watchList();
     while (k === this.seq) {
-      await soft(this.pause(rnd(3.5, 7)));
+      if (!this.faqWant) await soft(this.pause(rnd(3.5, 7)));
+      if (this.faqWant) {
+        // a question was just opened: think it over, nod (shared with the Studio's "FAQ Thinking")
+        this.faqWant = false;
+        this.mode = 'reacting';
+        await soft(this.SECT.createSectionActs(this.ch, { alive: () => k === this.seq && !this.dead, pause: (t) => this.pause(t) }).run('faqThink'));
+        this.mode = 'idle';
+        watchList();
+        continue;
+      }
       const what = this.pick('faq', ['tilt', 'flutter', 'glance', 'blink']);
       if (what === 'tilt') await soft(A.play('curiousTilt', { fx: false }));
       else if (what === 'flutter') A.play('leafFlutter', { fx: false });
@@ -458,6 +545,9 @@ export class Component extends DCLogic {
     // false = interrupted by a tap (already reacted); throws if the section was left
     const step = async (p) => { const r = await p; if (!alive()) throw null; if (this.tapPromise) { await this.tapPromise; if (!alive()) throw null; return false; } return r; };
     let g = this.howGeom(), fails = 0;
+    // the section behaviours along the path come from the shared module (the Studio plays the same ones)
+    const acts = this.SECT.createSectionActs(ch, { alive, step, pause: (t) => this.pause(t), path: () => this.howGeom() });
+    const pathAct = async (id, opt) => { this.mode = id === 'markerHop' ? 'moving' : 'reacting'; const r = await acts.run(id, opt); if (!alive()) throw null; this.howX = o.position.x; return r; };
     mv.place({ x: clampN(this.howX == null ? g.L : this.howX, g.L, g.R), y: g.y, z: 0 }, { scale: 0.001, heading: 'camera' });
     this.groundY = g.y;
     await step(this.scaleTo(g.s, 0.3, true));
@@ -465,33 +555,25 @@ export class Component extends DCLogic {
     while (alive()) {
       g = this.howGeom();
       const dir = this.howDir || 1;
+      // on the way: now and then hop over a garden marker, or stop under a step to look at it
+      const r = Math.random();
+      if (r < 0.45 && g.markers.length) await pathAct('markerHop', { dir, keepHeading: true });
+      else if (r < 0.7 && g.steps.length > 2) {
+        const ahead = g.steps.map((st, i) => ({ st, i })).filter(({ st }) => (st.x - o.position.x) * dir > 1.5 * g.s && st.x > g.L && st.x < g.R);
+        if (ahead.length) await pathAct('stepLook', { step: ahead[Math.floor(Math.random() * ahead.length)].i });
+      }
+      g = this.howGeom();
       this.mode = 'moving';
-      const arrived = await this.howRun(step, g, dir);
+      const arrived = await step(mv.walkTo({ x: dir > 0 ? g.R : g.L, y: g.y, z: 0 }, { run: true, pace: 2, stretch: 1.25, slow: true }));
       this.howX = o.position.x;
       if (!arrived) { if (!this.tapBusy && ++fails > 5) break; continue; } // tapped: carry on toward the same end
       fails = 0;
       this.howDir = -dir;
-      await this.loiter(step, alive, rnd(5, 10), 0.4, ['nod', 'happyHop', 'wave', 'tilt', 'inspect']);
+      // the end of the journey (the last step): a small celebration, now and then
+      if (dir > 0 && Math.random() < 0.35) await pathAct('journeyCheer');
+      const forced = async () => { const id = this.forceAct; if (id && /^(markerHop|stepLook|pathRest|pathWave|journeyCheer)$/.test(id)) { this.forceAct = null; await pathAct(id, id === 'markerHop' ? { dir: this.howDir || 1 } : undefined); this.mode = 'idle'; } return true; }; // (test controls)
+      await this.loiter(step, alive, rnd(5, 10), 0.4, ['nod', 'happyHop', 'wave', 'tilt', () => pathAct('pathRest'), () => pathAct('pathWave')], forced);
     }
-  }
-
-  // Run to the far end of the path, hopping over the pebble when it lies on the way.
-  async howRun(step, g, dir) {
-    const mv = this.ch.mover, o = this.ch.object, rock = this.q('how-rock'), rr = rock && rock.getBoundingClientRect();
-    const end = { x: dir > 0 ? g.R : g.L, y: g.y, z: 0 };
-    if (rr && rr.width) {
-      const rx = mv.screenToWorld(rr.left + rr.width / 2, 0, 0).x, m = rr.width / 2 / K + 0.85 * g.s;
-      const before = rx - dir * m, after = rx + dir * m;
-      if ((before - o.position.x) * dir > 0.05 && (end.x - after) * dir > 0.2) {
-        if (!(await step(mv.walkTo({ x: before, y: g.y, z: 0 }, { run: true, pace: 2, stretch: 1.25 })))) return false;
-        this.howJump = true;
-        let ok;
-        try { ok = await step(mv.jumpTo({ x: after, y: g.y, z: 0 }, { height: 0.55 })); } finally { this.howJump = false; }
-        if (!ok) return false;
-        this.mode = 'moving';
-      }
-    }
-    return step(mv.walkTo(end, { run: true, pace: 2, stretch: 1.25, slow: true }));
   }
 
   // Rest in place for `secs`: idle breathing and blinking throughout, with quiet beats that are
@@ -528,14 +610,13 @@ export class Component extends DCLogic {
     const step = async (p) => { const r = await p; if (!alive()) throw null; if (this.tapPromise) { await this.tapPromise; if (!alive()) throw null; return false; } return r; };
     const { s, stops } = g, DEEP = 2.15 * s, GRIP = 0.45 * s; // fully hidden behind the card / eyes and hands over its edge
     const on = (i) => { const st = stops[i], m = Math.max(0, st.half - 1.1 * s) * 0.6; return { x: st.x + rnd(-m, m), y: st.y, z: 0 }; };
-    const climbUp = async (i, x) => {
-      this.mode = 'climbing';
-      A.play('climb', { params: { dir: 1 } });
-      if (!(await step(mv.followPath([{ x, y: stops[i].y - GRIP, z: 0 }], { speed: 1.5, stepped: true, period: 0.9 })))) return false;
-      return step(mv.mantle({ x, y: stops[i].y, z: 0 }, { dur: 1.0 }));
-    };
-    const climbDown = (y) => { A.play('climb', { params: { dir: -1 } }); return step(mv.followPath([{ x: o.position.x, y, z: 0 }], { speed: 1.6, stepped: true, period: 0.9 })); };
     let cur = Math.min(this.aboutAt == null ? Math.floor(Math.random() * stops.length) : this.aboutAt, stops.length - 1);
+    // climbing and the card moments come from the shared module (also in the Animation Studio)
+    const acts = this.SECT.createSectionActs(ch, { alive, step, pause: (t) => this.pause(t), card: () => { const st = stops[cur]; return { x: st.x, top: st.y, half: st.half, cy: st.cy, plant: st.plant, detail: st.detail }; } });
+    const climbUp = async (i, x) => { this.mode = 'climbing'; return acts.climbUp(x); };
+    const climbDown = (y) => acts.climbDown(stops[cur].y - y);
+    // one card moment; the contact shadow is off while Leafity is below the card's top edge
+    const cardAct = async (id) => { this.mode = 'peeking'; this.groundY = null; await acts.run(id); if (!alive()) throw null; };
     const first = on(cur);
     mv.place({ x: first.x, y: first.y - DEEP, z: 0 }, { scale: s, heading: 'camera' });
     await climbUp(cur, first.x);
@@ -548,26 +629,13 @@ export class Component extends DCLogic {
         if (Math.abs(o.position.y - st.y) > 0.02 && !(await step(mv.mantle({ x: o.position.x, y: st.y, z: 0 }, { dur: 0.9 })))) return false;
         this.groundY = st.y;
         if (this.tapQueued) { this.tapQueued = false; this.tapBusy = true; await this.tapReact('about').catch(() => {}); this.tapBusy = false; if (!alive()) throw null; }
+        if (this.forceAct && this.forceAct.startsWith('card')) { const id = this.forceAct; this.forceAct = null; if (A.current === 'sit') A.returnToIdle(); await cardAct(id); this.mode = 'idle'; } // (test controls)
         if (sitting && A.current === 'idle') A.play('sit', { params: { flat: true } });
         return true;
       };
-      const peekOver = async () => {
-        this.mode = 'peeking';
-        this.groundY = null;
-        if (await climbDown(st.y - GRIP)) { A.play('edgeGrip'); await step(this.pause(rnd(1.4, 2.2))); }
-      };
-      // ducks right down behind the card, then peeks back over the edge before climbing up again
-      const duck = async () => {
-        this.mode = 'peeking';
-        this.groundY = null;
-        A.returnToIdle();
-        if (!(await step(mv.followPath([{ x: o.position.x, y: st.y - DEEP, z: 0 }], { speed: 4.5 })))) return;
-        await step(this.pause(rnd(0.8, 1.4)));
-        if (await step(mv.followPath([{ x: o.position.x, y: st.y - GRIP, z: 0 }], { speed: 2.2 }))) { A.play('edgeGrip'); await step(this.pause(rnd(1, 1.6))); }
-      };
       const lookDown = async () => { A.setLook(0, -0.9, 0.5); await step(this.pause(1.7)); A.clearLook(); };
-      const pointAt = () => step(ch.pointAt({ x: st.x, y: st.cy }));
-      await this.loiter(step, alive, rnd(8, 15), 0.6, ['wave', 'giggle', 'tilt', lookDown, pointAt, peekOver, duck, 'inspect'], settle);
+      const moments = [() => cardAct('cardPeekOver'), () => cardAct('cardCornerPeek'), () => cardAct('cardInspect'), () => cardAct('cardPoint'), () => cardAct('cardHop')];
+      await this.loiter(step, alive, rnd(8, 15), 0.6, ['wave', 'giggle', 'tilt', lookDown, ...moments], settle);
       if (!alive()) return;
       if (!(await settle())) continue;
       if (A.current === 'sit') { A.returnToIdle(); await step(this.pause(0.45)); }
@@ -671,7 +739,7 @@ export class Component extends DCLogic {
   surpriseSpot(size, corner, symbol) {
     const nav = this.rootRef.current.querySelector('.ls-nav'), top = (nav ? nav.getBoundingClientRect().bottom : 0) + 8, vw = this.vw, vh = this.vh;
     // things Leafity must not cover (decorative background shapes don't count)
-    const busy = 'a,button,summary,details,p,h1,h2,h3,ol,ul,svg:not(.ls-deco):not(.ls-scene svg),img,input,.ls-card,.ls-bubble,.ls-say,.ls-hphone,.ls-phone,.ls-fact,.ls-nav,.ls-note,.ls-eyebrow,.ls-chip,.ls-fbtn,.pm';
+    const busy = 'a,button,summary,details,p,h1,h2,h3,ol,ul,svg:not(.ls-deco),img,input,.ls-card,.ls-bubble,.ls-phone,.ls-fact,.ls-nav,.ls-note,.ls-eyebrow,.ls-chip,.ls-fbtn,.pm';
     let m = 12; // clearance around the silhouette, px (more for giants: they sway further)
     const clear = (r) => {
       if (r.eyes < 1) return null;
@@ -730,6 +798,7 @@ export class Component extends DCLogic {
   async visit(kind, variant, force, forceSize) {
     const ch = this.ch, now = performance.now();
     if (!ch || this.visiting || this.dead) return;
+    if (this.farming && !force) { if (this.due) this.due[kind] = performance.now() + 15000; this.plan(); return; } // let the gardening finish
     const later = (sec) => { if (this.due) this.due[kind] = performance.now() + sec * 1000; this.plan(); };
     // stay quiet while the visitor is scrolling, has only just arrived in a section, or is playing with Leafity
     if (!force && (document.hidden || this.tapBusy || now - (this.scrolledAt || 0) < 1500 || now - (this.enteredAt || 0) < 12000)) { later(15); return; }
@@ -800,10 +869,68 @@ export class Component extends DCLogic {
     }
   }
 
+  // FAQ: a question opened — one thinking reaction, at most every 6 s, never on top of another
+  faqPoke() {
+    const now = performance.now();
+    if (this.active !== 'faq' || this.reduced || !this.ch || this.visiting || now - (this.faqAt || 0) < 6000) return;
+    this.faqAt = now; this.faqWant = true;
+    this.cancelPauses();
+  }
+  // Download: the button gives a little pop; Leafity cheers and the herbs rustle (at most every 5 s)
+  dlCheer(e) {
+    const btn = e && e.currentTarget, now = performance.now();
+    if (btn) this.nudge(btn, 'jr-pop');
+    if (this.active !== 'download' || this.reduced || !this.ch || this.visiting || this.ch.mover.moving || now - (this.dlAt || 0) < 5000) return;
+    this.dlAt = now;
+    const herb = this.rootRef.current.querySelector('#download .jr-showleaf');
+    if (herb) this.nudge(herb, 'jr-rustle');
+    const k = this.seq;
+    this.SECT.createSectionActs(this.ch, { alive: () => k === this.seq && !this.dead, pause: (t) => this.pause(t) }).run('downloadCheer').catch(() => {});
+  }
+  // Meet Leafity: the cozy corner — Leafity on the bench, the herb pot to water or inspect. The
+  // gardening itself is the shared farmer module (the same one the hero and the Studio use).
+  meetScene(k) {
+    const ch = this.ch, mv = ch.mover, A = ch.animator, o = ch.object, fine = matchMedia('(pointer: fine)').matches;
+    const spot = this.q('meet-stage'), herb = this.q('meet-herb');
+    if (!spot || !herb) return null;
+    const alive = () => k === this.seq && !this.dead;
+    const geo = () => { const r = spot.getBoundingClientRect(), hp = herb.getBoundingClientRect(); return { r, hp, half: 0.8 * o.scale.x * K, y: mv.screenToWorld(0, r.bottom, 0).y, wx: (px) => mv.screenToWorld(px, 0, 0).x }; };
+    const settle = () => { const g = geo(), sx = mv.worldToScreen({ x: o.position.x, y: o.position.y, z: 0 }).x; this.anchorDX = (sx - (g.r.left + g.r.width / 2)) / g.r.width; };
+    const go = async (x) => {
+      const g = geo();
+      this.mode = 'moving'; ch.followPointer(false); ch.setAmbient(false);
+      const done = await mv.walkTo({ x, y: g.y, z: 0 }, { face: false });
+      settle();
+      if (done && alive()) await mv.faceCamera();
+      return done && alive();
+    };
+    const home = async () => { if (Math.abs(this.anchorDX || 0) < 0.004) { this.anchorDX = 0; return true; } const g = geo(), ok = await go(g.wx(g.r.left + g.r.width / 2)); if (ok) this.anchorDX = 0; return ok; };
+    const calm = () => { if (!alive()) return; this.mode = 'idle'; A.clearLook(); mv.faceCamera(); ch.setAmbient(true); ch.followPointer(fine); };
+    const at = (b, fx, fy) => { const w = mv.screenToWorld(b.left + b.width * fx, b.top + b.height * fy, 0); return new this.THREE.Vector3(w.x, w.y, 0); };
+    return { alive, calm, home, go,
+      pause: (t) => this.pause(t),
+      face: (x, amount = 0.3) => mv.turnTo(mv.headingToward({ x, y: o.position.y, z: 0 }, amount), 0.45),
+      // the herb pot (herb-pot.svg: 90 wide, pot 46 wide, soil at 68 of 110)
+      target: () => { const g = geo(), cx = g.hp.left + g.hp.width / 2, near = cx + g.hp.width * 23 / 90 + g.half; return { left: true, px: g.wx(cx), near: g.wx(near), water: g.wx(near + 0.45 * g.half), soil: at(g.hp, 0.5, 68 / 110) }; },
+      tray: () => null,
+      nudge: (name, cls) => this.nudge(herb, cls === 'perk' ? 'jr-perk' : 'jr-rustle'),
+    };
+  }
+  meetAct(what, opt) {
+    if (!this.ch || !this.garden || !this.FARM || this.reduced) return;
+    if (this.active !== 'leafity' || this.visiting || this.farming || this.ch.mover.moving) return;
+    const env = this.meetScene(this.seq);
+    if (!env) return;
+    this.cancelPauses();
+    this.ch.animator.returnToIdle();
+    this.farming = what;
+    this.FARM.createFarmer(this.ch, this.garden, env).run(what, opt).catch(() => {}).finally(() => { this.farming = null; });
+  }
+
   // Meet Leafity buttons and the feature picker
   play(name) {
     const ch = this.ch;
-    if (!ch || this.visiting) return;
+    if (!ch || this.visiting || this.farming) return;
     if (this.active !== 'leafity' && this.active !== 'features') return;
     ch.mover.stop();
     ch.playAnimation(name);
@@ -821,17 +948,25 @@ export class Component extends DCLogic {
       menuCls: menu ? 'open' : '',
       toggleMenu: () => this.setState({ menu: !menu }),
       closeMenu: () => this.setState({ menu: false }),
-      feats: FEATURES.map((f, i) => ({ num: 'Feature ' + (i + 1), title: f.title, desc: f.desc, on: i === feat, pick: () => { this.setState({ feat: i }); if (this.active === 'features') this.play(f.clip); } })),
+      feats: FEATURES.map((f, i) => ({ num: 'Feature ' + (i + 1), title: f.title, desc: f.desc, icon: 'hand-drawn-garden/assets/site/feat-' + (i + 1) + '.svg', on: i === feat, pick: () => { this.setState({ feat: i }); if (this.active === 'features') this.play(f.clip); } })),
       featScreen: FEATURES[feat].screen,
+      featReal: !!SHOTS[FEATURES[feat].screen],
+      featConcept: !SHOTS[FEATURES[feat].screen],
+      featShot: SHOTS[FEATURES[feat].screen] ? SHOTS[FEATURES[feat].screen][0] : '',
+      featShotAlt: SHOTS[FEATURES[feat].screen] ? SHOTS[FEATURES[feat].screen][1] : '',
+      featNote: SHOTS[FEATURES[feat].screen] ? 'Screenshot from the LeafSpectra Android app (in development).' : 'Concept preview — not a screenshot of the finished app.',
       featDesc: FEATURES[feat].desc,
       two: 2,
       minusTwo: -2,
-      heroTilt: -4,
       doWave: () => this.play('wave'),
       doHop: () => this.play('happyHop'),
       doCurious: () => this.play('curiousTilt'),
       doHappy: () => this.play('love'),
-      doBow: () => this.play('bow'),
+      doWater: () => this.meetAct('water', 'herb'),
+      doInspect: () => this.meetAct('inspect', 'herb'),
+      doProud: () => this.meetAct('proud'),
+      doJoy: () => this.meetAct('joy'),
+      dlClick: (e) => this.dlCheer(e),
       // The download: change apkUrl and apkFileName (e.g. /LeafSpectra.apk) and switch apkIsTest off
       // when the real installer is ready. An empty apkUrl shows "coming soon" instead of a button.
       hasApk: !!apkUrl,
