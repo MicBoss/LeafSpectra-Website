@@ -33,6 +33,12 @@ x-if[hidden]{display:none}
 html{scroll-behavior:smooth;scroll-padding-top:76px}
 html,body{margin:0;background:#f5ebd7}
 .ls{--bg:#f5ebd7;--surface:#fffbf2;--soft:#e1efcb;--leaf:#91be58;--deep:#405c35;--earth:#704a2d;--ink:#30291e;--muted:#5f5140;--line:#e3d3b3;
+  /* cozy garden tokens (from the Android app's art direction) */
+  --paper:#fffaf0;--cream:#fbf3e2;--sage:#c5d9a4;--olive:#7d8f4e;--forest:#2f4a2a;--wood:#b98a56;--wood-d:#8a6036;--wood-l:#d9b588;--rust:#a24a25;--rust-d:#843a1b;--clay:#c97a4f;
+  --r-lg:26px;--r-md:20px;--r-sm:14px;
+  --sh-soft:0 1px 0 rgba(112,74,45,.06),0 12px 26px -16px rgba(84,58,30,.38);--sh-lift:0 2px 0 rgba(112,74,45,.06),0 18px 34px -18px rgba(84,58,30,.45);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .44 0 0 0 0 .29 0 0 0 0 .18 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+
   font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:17px;line-height:1.6;overflow-x:clip;position:relative}
 .ls *{box-sizing:border-box}
 .ls h1,.ls h2,.ls h3,.ls p{margin:0}
@@ -44,21 +50,26 @@ html,body{margin:0;background:#f5ebd7}
 .ls :focus-visible{outline:3px solid #2f6fb5;outline-offset:3px;border-radius:6px}
 /* Leafity is drawn on one fixed canvas between the section backgrounds and the content */
 .ls-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
-.ls-wrap{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:0 24px}
+.ls-wrap{position:relative;max-width:1120px;margin:0 auto;padding:0 24px}
+/* every block of content draws above Leafity's canvas; the stages stay transparent to it so the
+   scenery inside them (window, shelf, pots, hero phone) can sit behind Leafity */
+.ls-wrap > *,.ls-herotext > *{position:relative;z-index:2}
+.ls-wrap > .ls-stage,.ls-hero > .ls-stage{z-index:auto}
 .ls-sec{padding:92px 0;position:relative}
 .ls-eyebrow{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--deep)}
 .ls-lead{font-size:19px;color:var(--muted);max-width:60ch}
 .ls-head{display:flex;flex-direction:column;gap:12px;margin-bottom:40px}
-.ls-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:10px}
+.ls-card{background:var(--surface) linear-gradient(180deg,#fffdf7,rgba(255,250,240,0) 60%);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--sh-soft);transition:box-shadow .2s}
+@media (hover:hover){.ls-card:hover{box-shadow:var(--sh-lift)}}
 .ls-ico{width:48px;height:48px;border-radius:16px;background:var(--soft);display:grid;place-items:center;flex:none}
-.ls-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:99px;border:2px solid var(--deep);font:800 16px 'Nunito',system-ui,sans-serif;text-decoration:none;cursor:pointer;background:var(--deep);color:#fffbf2;transition:translate .15s}
+.ls-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:99px;border:2px solid var(--rust-d);font:800 16px 'Nunito',system-ui,sans-serif;text-decoration:none;cursor:pointer;background:var(--rust);color:#fffbf2;transition:translate .15s,box-shadow .15s;box-shadow:0 3px 0 var(--rust-d),0 10px 18px -12px rgba(132,58,27,.6)}
 .ls-btn:hover{translate:0 -2px}
-.ls-btn.ghost{background:transparent;color:var(--deep)}
+.ls-btn.ghost{background:var(--paper);color:var(--deep);border-color:var(--deep);box-shadow:0 3px 0 #c9b48a}
 .ls a.ls-btn{color:#fffbf2}
 .ls a.ls-btn.ghost{color:var(--deep)}
 .ls-btn[aria-disabled="true"]{background:#e9dcc2;border-color:#cdbb97;color:#5f5140;cursor:not-allowed;translate:none}
 /* nav */
-.ls-nav{position:sticky;top:0;z-index:20;background:#f5ebd7;border-bottom:1px solid var(--line)}
+.ls-nav{position:sticky;top:0;z-index:20;background:rgba(245,235,215,.96);border-bottom:1px solid var(--line);box-shadow:0 8px 18px -16px rgba(84,58,30,.5)}
 .ls-nav .in{max-width:1120px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .ls-mark{display:flex;align-items:center;text-decoration:none;margin-right:auto;border-radius:10px}
 /* Official LeafSpectra lockups (brand/Group 1.svg on light, brand/Group 2.svg on dark), shown unaltered.
@@ -68,7 +79,8 @@ html,body{margin:0;background:#f5ebd7}
 .ls-brand img{position:absolute;display:block;max-width:none;height:calc(var(--h) * 171 / 94);width:auto;left:calc(var(--h) * -29 / 94);top:calc(var(--h) * -39 / 94)}
 .ls-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .ls-links a{text-decoration:none;font-weight:800;font-size:15px;color:var(--earth);padding:10px 12px;border-radius:99px}
-.ls-links a:hover{background:var(--soft)}
+.ls-links a:hover,.ls-links a.on{background:var(--soft)}
+.ls-links a.on{color:var(--forest)}
 .ls-links a.cta{background:var(--deep);color:#fffbf2;padding:10px 18px;margin-left:6px}
 .ls-menu{display:none;min-height:44px;padding:0 16px;border-radius:99px;border:2px solid var(--earth);background:transparent;color:var(--earth);font:800 15px 'Nunito',system-ui,sans-serif;cursor:pointer}
 /* hero */
@@ -77,6 +89,125 @@ html,body{margin:0;background:#f5ebd7}
 .ls-stage{position:relative;min-height:470px}
 .ls-fallback{position:absolute;inset:12% 10%;border-radius:32px;background:var(--soft);display:grid;place-items:center;text-align:center;padding:20px;font-weight:700;color:var(--deep)}
 .ls-deco{position:absolute;z-index:0;pointer-events:none}
+/* journal-paper sections: faint ruled lines and scalloped paper edges */
+.ls-tint{background:var(--cream) repeating-linear-gradient(180deg,transparent 0 33px,rgba(185,138,86,.07) 33px 34px)}
+.ls-tint::before,.ls-tint::after{content:"";position:absolute;left:0;right:0;height:12px;pointer-events:none;background:radial-gradient(circle at 12px 0,var(--cream) 11.5px,transparent 12.5px) 0 0/24px 12px repeat-x}
+.ls-tint::before{top:-12px;transform:scaleY(-1)}
+.ls-tint::after{bottom:-12px}
+
+/* ==== Phase 2: section scenes ==== */
+/* About — a garden-discovery spread: journal page, seed packet, plant label, scrapbook note */
+.ls-card.jr,.ls-card.pk,.ls-card.lb,.ls-card.nt{position:relative;overflow:visible}
+.ls-card.jr{background:var(--paper) repeating-linear-gradient(180deg,transparent 0 25px,rgba(125,143,78,.16) 25px 26px) 0 58px/100% auto no-repeat;box-shadow:inset 3px 0 0 0 rgba(162,74,37,.0),var(--sh-soft)}
+.ls-card.jr{padding-left:34px}
+.ls-card.jr::after{content:"";position:absolute;left:20px;top:56px;bottom:16px;width:2px;background:rgba(162,74,37,.22)}
+.ls-arches{display:flex;gap:8px;height:56px}
+.ls-arches span{width:48px;height:56px;border-radius:24px 24px 8px 8px;background:#f6eedf;box-shadow:inset 0 0 0 1px #e3d3b3;display:grid;place-items:end center;overflow:hidden}
+.ls-arches svg{width:46px;height:46px;display:block}
+.ls-card.pk{background:linear-gradient(180deg,#eef4dc 0 88px,#fdf3df 88px);border-color:#d8cfa6}
+.ls-card.pk::after{content:"";position:absolute;left:14px;right:14px;top:87px;border-top:2px dashed rgba(125,143,78,.45)}
+.ls-card.lb{background:#fffdf6;border-radius:var(--r-lg) var(--r-lg) var(--r-lg) var(--r-lg)}
+.ls-card.lb::after{content:"";position:absolute;right:16px;top:16px;width:12px;height:12px;border-radius:50%;background:var(--cream);box-shadow:inset 0 1px 2px rgba(84,58,30,.35),0 0 0 3px #efe2c6}
+.ls-card.nt{background:#fff8ea}
+.ls-tape{position:absolute;top:-9px;width:62px;height:20px;background:rgba(197,217,164,.75);border-left:2px dotted rgba(255,255,255,.6);border-right:2px dotted rgba(255,255,255,.6);box-shadow:0 1px 2px rgba(84,58,30,.15);z-index:3;pointer-events:none}
+.ls-tape.l{left:14px;rotate:-6deg}.ls-tape.r{right:14px;rotate:5deg;background:rgba(242,193,78,.55)}
+.ls-card.jr .ls-ico,.ls-card.nt .ls-ico{background:#f3ead4}
+.ls-card .ls-ico{box-shadow:inset 0 0 0 2px rgba(64,92,53,.12)}
+/* Features — a gardener's toolkit: tag buttons hung on a pegboard; the preview sits on a potting bench */
+.ls-featlist{background:#efe1c4 radial-gradient(circle,rgba(112,74,45,.18) 2.2px,transparent 2.8px) 0 0/22px 22px;border-radius:var(--r-lg);padding:16px;box-shadow:inset 0 2px 6px rgba(84,58,30,.18)}
+.ls-fbtn{position:relative;padding-top:22px}
+.ls-fbtn::before{content:"";position:absolute;right:14px;top:12px;width:10px;height:10px;border-radius:50%;background:#efe1c4;box-shadow:inset 0 1px 2px rgba(84,58,30,.4),0 0 0 2px #e7d6b4}
+.ls-fbtn .n{align-self:flex-start;background:var(--soft);border-radius:99px;padding:0 10px;font-size:13px}
+.ls-fbtn[aria-pressed="true"] .n{background:var(--deep);color:#fffbf2}
+.ls-duo{position:relative;margin-bottom:40px}
+.ls-bench{position:absolute;left:-14%;right:-14%;top:100%;height:18px;border-radius:6px;background:linear-gradient(180deg,var(--wood-l),var(--wood) 35%,var(--wood-d));box-shadow:0 10px 14px -8px rgba(84,58,30,.5),inset 0 1px 0 rgba(255,240,210,.6);pointer-events:none}
+.ls-bench::before,.ls-bench::after{content:"";position:absolute;top:100%;width:12px;height:22px;background:linear-gradient(90deg,var(--wood-d),var(--wood))}
+.ls-bench::before{left:10%}.ls-bench::after{right:10%}
+.ls-benchdeco{position:absolute;bottom:0;width:clamp(44px,5vw,64px);height:auto;pointer-events:none}
+/* How It Works — a garden journey: stepping stones, a soil path with sprouts, and a pebble to hop */
+.ls-wrap > .ls-path{z-index:auto}
+.ls-path::after{bottom:2px;height:14px;border:0;border-radius:99px;background:radial-gradient(circle at 20% 40%,rgba(255,240,210,.35) 2px,transparent 3px) 0 0/34px 14px,linear-gradient(180deg,#a87b52,#8a6036)}
+.ls-path::before{content:"";position:absolute;left:2%;right:2%;bottom:15px;height:16px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='16'%3E%3Cpath d='M30 16V8' stroke='%235d7a3e' stroke-width='2'/%3E%3Cpath d='M30 9c-5 0-8-3-8-7 5 0 8 3 8 7Zm0 0c0-4 3-7 8-7 0 4-3 7-8 7Z' fill='%2391be58'/%3E%3Cpath d='M92 16v-5' stroke='%235d7a3e' stroke-width='2'/%3E%3Cpath d='M92 12c-4 0-6-2-6-5 4 0 6 2 6 5Zm0 0c0-3 2-5 6-5 0 3-2 5-6 5Z' fill='%23a9cf78'/%3E%3C/svg%3E") 0 100%/120px 16px repeat-x;opacity:.9}
+.ls-rock{position:absolute;left:50%;bottom:13px;width:30px;height:15px;margin-left:-15px;border-radius:50% 50% 40% 40%/70% 70% 30% 30%;background:radial-gradient(circle at 35% 30%,#d7cbb4,#a99a80 70%);box-shadow:inset 0 -2px 0 rgba(84,58,30,.25)}
+.ls-step .num{background:radial-gradient(circle at 35% 30%,#f0e6d2,#cdbf9f);color:var(--forest);box-shadow:inset 0 -3px 0 rgba(84,58,30,.18),0 2px 0 rgba(84,58,30,.12)}
+.ls-step{position:relative;overflow:visible}
+.ls-step::after{content:"";position:absolute;right:14px;top:18px;width:30px;height:30px;background:var(--grow) center/contain no-repeat;opacity:.95}
+.ls-step:nth-child(1){--grow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M4 24h22' stroke='%238a6036' stroke-width='3' stroke-linecap='round'/%3E%3Cellipse cx='15' cy='20' rx='4' ry='3' fill='%23b98a56'/%3E%3C/svg%3E")}
+.ls-step:nth-child(2){--grow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M4 24h22' stroke='%238a6036' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M15 23v-6' stroke='%235d7a3e' stroke-width='2'/%3E%3Cpath d='M15 18c-4 0-6-2-6-5 4 0 6 2 6 5Z' fill='%2391be58'/%3E%3C/svg%3E")}
+.ls-step:nth-child(3){--grow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M4 24h22' stroke='%238a6036' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M15 23V12' stroke='%235d7a3e' stroke-width='2'/%3E%3Cpath d='M15 15c-5 0-8-3-8-7 5 0 8 3 8 7Zm0 0c0-4 3-7 8-7 0 4-3 7-8 7Z' fill='%2391be58'/%3E%3C/svg%3E")}
+.ls-step:nth-child(4){--grow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M4 26h22' stroke='%238a6036' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M15 25V6' stroke='%235d7a3e' stroke-width='2'/%3E%3Cpath d='M15 13c-6 0-9-3-9-7 6 0 9 3 9 7Zm0 6c0-4 3-7 9-7 0 4-3 7-9 7Z' fill='%2391be58'/%3E%3Ccircle cx='19' cy='8' r='3' fill='%23f2c14e'/%3E%3C/svg%3E")}
+.ls-step:nth-child(5){--grow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M4 27h22' stroke='%238a6036' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M15 26V5' stroke='%235d7a3e' stroke-width='2'/%3E%3Cpath d='M15 12c-6 0-9-3-9-7 6 0 9 3 9 7Zm0 7c0-4 3-7 9-7 0 4-3 7-9 7Z' fill='%2391be58'/%3E%3Ccircle cx='9' cy='17' r='3.4' fill='%23d94a2b'/%3E%3Ccircle cx='21' cy='7' r='3' fill='%23d94a2b'/%3E%3C/svg%3E")}
+@media (min-width:981px){.ls-step:not(:last-child)::before{content:"";position:absolute;right:-13px;top:28px;width:12px;border-top:3px dotted #c9b48a}}
+/* Meet Leafity — a cozy corner: woven rug, hanging planter, a little side table */
+.ls-meetscene .rug{position:absolute;left:8%;right:8%;bottom:-10px;height:46px;border-radius:50%;background:repeating-radial-gradient(ellipse at center,#e7cfa6 0 6px,#dcbf91 6px 9px,#ead6b2 9px 14px);box-shadow:0 6px 12px -8px rgba(84,58,30,.5)}
+.ls-meetscene .hang{position:absolute;left:4%;top:0;width:22%;height:auto}
+.ls-meetscene .table{position:absolute;right:2%;bottom:20px;width:20%;height:auto}
+.ls-bubble{background:var(--paper);box-shadow:var(--sh-soft);position:relative}
+.ls-bubble::before{content:"LEAFITY";display:block;font:800 10px 'Baloo 2',sans-serif;letter-spacing:.14em;color:var(--olive);margin-bottom:2px}
+/* FAQ — journal panels with a leaf marker that turns when open */
+.ls-faq details{background:var(--paper);box-shadow:var(--sh-soft);border-left:5px solid #e7d6b4;transition:border-color .2s}
+.ls-faq details[open]{border-left-color:var(--sage);background:var(--paper) repeating-linear-gradient(180deg,transparent 0 27px,rgba(125,143,78,.12) 27px 28px) 0 64px/100% auto no-repeat}
+.ls-faq summary{list-style:none;display:flex;gap:12px;align-items:flex-start}
+.ls-faq summary::-webkit-details-marker{display:none}
+.ls-faq summary::before{content:"";flex:none;width:18px;height:18px;margin-top:4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M3 15C3 7 8 3 15 3c0 7-4 12-12 12Z' fill='%2391be58' stroke='%23405c35' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M3 15 10 8' stroke='%23405c35' stroke-width='1.4'/%3E%3C/svg%3E") center/contain no-repeat;transition:rotate .25s}
+.ls-faq details[open] summary::before{rotate:90deg}
+/* Download — a plant-care station: the phone and Leafity on a wooden potting bench */
+.ls-dlbg{background:radial-gradient(260px 260px at 92% 6%,#fbe8b4,rgba(251,232,180,0) 70%),var(--paper);box-shadow:var(--sh-soft)}
+.ls-fact{background:#fffdf6;border:1px dashed #d8c39a;position:relative}
+/* Footer — a botanical edge with hanging vines */
+.ls-foot::before{content:"";position:absolute;left:0;right:0;top:-13px;height:14px;background:radial-gradient(circle at 13px 14px,var(--deep) 12.5px,transparent 13.5px) 0 0/26px 14px repeat-x;pointer-events:none}
+.ls-footvine{position:absolute;left:0;right:0;top:0;width:100%;height:70px;pointer-events:none;z-index:1}
+.ls-foot .in{padding-top:70px}
+/* ---- hero: a sunlit garden corner. Everything in .ls-scene is scenery below Leafity's canvas. */
+.ls-corner{min-height:480px}
+.ls-scene,.ls-scene *{pointer-events:none}
+.ls-scene{position:absolute;inset:0;z-index:0}
+.ls-room{position:absolute;left:8%;right:0;top:0;bottom:40px;border-radius:28px;background:linear-gradient(180deg,#efe2c6,#e8d6b4);box-shadow:inset 0 0 0 1px rgba(185,138,86,.25)}
+.ls-window{position:absolute;top:7%;left:22%;right:6%;height:52%;border:9px solid #c9a77a;border-radius:6px;box-shadow:0 10px 24px -18px rgba(84,58,30,.6),inset 0 0 0 1px rgba(255,240,210,.5);overflow:hidden;
+  background:radial-gradient(90% 90% at 18% 10%,#fff6d8 0,rgba(255,246,216,0) 60%),#efe0c4}
+.ls-window::before,.ls-window::after{content:"";position:absolute;inset:0;pointer-events:none}
+.ls-window::before{background:linear-gradient(90deg,transparent calc(25% - 3px),#c9a77a calc(25% - 3px) calc(25% + 3px),transparent calc(25% + 3px) calc(50% - 3px),#c9a77a calc(50% - 3px) calc(50% + 3px),transparent calc(50% + 3px) calc(75% - 3px),#c9a77a calc(75% - 3px) calc(75% + 3px),transparent calc(75% + 3px))}
+.ls-window::after{background:linear-gradient(180deg,transparent calc(50% - 3px),#c9a77a calc(50% - 3px) calc(50% + 3px),transparent calc(50% + 3px))}
+.ls-floorlight{position:absolute;right:4%;bottom:40px;width:46%;height:24%;background:linear-gradient(180deg,rgba(255,248,226,0),rgba(255,248,226,.85));clip-path:polygon(28% 0,100% 0,86% 100%,0 100%);animation:ls-beam 9s ease-in-out infinite}
+.ls-ivy{position:absolute;top:-4px;width:24%;height:auto;overflow:visible}
+.ls-ivy.l{left:7%}.ls-ivy.r{right:-2%;transform:scaleX(-1)}
+.ls-sun{position:absolute;left:4%;top:6%;width:36%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#fff3c4 0,#fbe3a0 38%,rgba(251,227,160,0) 70%);animation:ls-glow 7s ease-in-out infinite}
+.ls-beams{position:absolute;inset:-10% -20% 0 10%;background:repeating-linear-gradient(65deg,rgba(255,244,205,0) 0 34px,rgba(255,244,205,.55) 34px 60px,rgba(255,244,205,0) 60px 104px);-webkit-mask:linear-gradient(160deg,#000 10%,transparent 70%);mask:linear-gradient(160deg,#000 10%,transparent 70%);animation:ls-beam 9s ease-in-out infinite}
+@keyframes ls-glow{0%,100%{opacity:.82;scale:1}50%{opacity:1;scale:1.06}}
+@keyframes ls-beam{0%,100%{opacity:.45;translate:0 0}50%{opacity:.85;translate:-10px 0}}
+.ls-trellis{position:absolute;left:9%;top:22%;bottom:50px;width:12%;border-radius:10px 10px 0 0;
+  background:repeating-linear-gradient(45deg,transparent 0 15px,#c49a68 15px 19px),repeating-linear-gradient(-45deg,transparent 0 15px,#b98a56 15px 19px);opacity:.9;
+  -webkit-mask:linear-gradient(180deg,transparent,#000 18%);mask:linear-gradient(180deg,transparent,#000 18%)}
+.ls-sway{transform-box:fill-box;transform-origin:50% 0;animation:ls-sway 6s ease-in-out infinite}
+.ls-sway.b{animation-duration:7.5s;animation-delay:-2s}
+.ls-sway.c{animation-duration:5.2s;animation-delay:-3.5s}
+@keyframes ls-sway{0%,100%{rotate:-3deg}50%{rotate:3deg}}
+.ls-climb{position:absolute;left:7%;top:26%;width:15%;height:auto;bottom:auto}
+.ls-shelf{position:absolute;left:-2%;right:-2%;bottom:30px;height:20px;border-radius:6px;background:linear-gradient(180deg,var(--wood-l) 0,var(--wood) 30%,var(--wood-d) 100%);box-shadow:0 10px 16px -8px rgba(84,58,30,.55),inset 0 1px 0 rgba(255,240,210,.6)}
+.ls-shelf::before{content:"";position:absolute;inset:6px 4% auto;height:2px;border-radius:2px;background:repeating-linear-gradient(90deg,rgba(138,96,54,.45) 0 60px,transparent 60px 90px)}
+.ls-shelf i{position:absolute;top:100%;width:16px;height:26px;background:linear-gradient(90deg,var(--wood-d),var(--wood));clip-path:polygon(0 0,100% 0,100% 100%);}
+.ls-shelf i:first-child{left:12%}.ls-shelf i:last-child{right:12%;transform:scaleX(-1)}
+.ls-pot{position:absolute;bottom:48px;height:auto}
+.ls-pot.tomato{left:1%;width:19%}
+.ls-pot.egg{right:-1%;width:15%}
+.ls-hphone{position:absolute;right:9%;bottom:47px;width:25%;z-index:0;transform-origin:50% 100%;transition:transform .5s cubic-bezier(.2,.8,.2,1);animation:ls-rise .9s .25s cubic-bezier(.2,.8,.2,1) both}
+.ls-hphone::after{content:"";position:absolute;left:8%;right:8%;bottom:-6px;height:12px;border-radius:50%;background:rgba(84,58,30,.28);filter:blur(4px);z-index:-1}
+@media (hover:hover) and (pointer:fine){.ls-hphone{pointer-events:auto}.ls-hphone:hover{transform:perspective(900px) rotateY(-9deg) rotateX(3deg) translateY(-6px)}}
+@keyframes ls-rise{from{opacity:0;translate:0 26px}to{opacity:1;translate:0 0}}
+.ls-herospot{position:absolute;left:10%;right:26%;top:4%;bottom:50px}
+.ls-herospot .ls-fallback{inset:10% 0;z-index:2}
+/* the app's Leafity card, as a speech bubble that appears after Leafity's greeting */
+.ls-say{position:absolute;right:0;top:0;width:min(46%,250px);z-index:2;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:14px 18px 16px;box-shadow:var(--sh-lift);animation:ls-pop .5s 3.4s cubic-bezier(.3,1.5,.5,1) both}
+.ls-say .who{font:800 12px 'Nunito',sans-serif;letter-spacing:.16em;color:var(--earth);margin-bottom:4px}
+.ls-say::after{content:"";position:absolute;left:-10px;bottom:16px;width:20px;height:20px;background:var(--paper);border-left:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg);border-radius:0 0 0 4px}
+.ls-say p{font-size:15px;line-height:1.45;font-weight:600;color:var(--ink)}
+.ls[data-say="wait"] .ls-say:not(.on){animation:none;opacity:0;visibility:hidden}
+.ls[data-say="wait"] .ls-say.on{animation:ls-pop .5s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes ls-pop{from{opacity:0;scale:.85;translate:0 8px}to{opacity:1;scale:1;translate:0 0}}
+/* concept phones: a warm sunlit disc behind and a soft floor shadow */
+.ls-phone{position:relative;isolation:isolate}
+.ls-phone::before{content:"";position:absolute;left:4%;right:4%;top:10%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#fbe8b4 0,#f6e2b8 45%,rgba(246,226,184,0) 70%);z-index:-1}
+.ls-phone::after{content:"";position:absolute;left:12%;right:12%;bottom:-8px;height:14px;border-radius:50%;background:rgba(84,58,30,.25);filter:blur(5px);z-index:-1}
 .ls-scroll{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:var(--earth);text-decoration:none;margin-top:8px}
 .ls-scroll span{display:inline-block;animation:ls-nudge 2.2s ease-in-out infinite}
 @keyframes ls-nudge{0%,100%{translate:0 0}50%{translate:0 5px}}
@@ -87,8 +218,10 @@ html,body{margin:0;background:#f5ebd7}
 .ls-garland svg{display:block;width:min(100%,600px);height:auto;overflow:visible}
 .ls-feat{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:36px;align-items:center}
 .ls-featlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.ls-fbtn{text-align:left;font:inherit;color:inherit;cursor:pointer;background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:6px}
-.ls-fbtn[aria-pressed="true"]{border-color:var(--deep);background:#f3f8e6}
+.ls-fbtn{text-align:left;font:inherit;color:inherit;cursor:pointer;background:var(--surface);border:2px solid var(--line);border-radius:var(--r-md);padding:18px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh-soft);transition:border-color .15s,box-shadow .15s}
+@media (hover:hover){.ls-fbtn:hover{box-shadow:var(--sh-lift);border-color:var(--sage)}}
+.ls-fbtn[aria-pressed="true"]{border-color:#4a5a35;background:#e1ebcd}
+.ls-fbtn[aria-pressed="true"] h3::after{content:" ✓"}
 .ls-fbtn .n{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:14px;color:var(--deep)}
 .ls-fdesc{font-size:15px;color:var(--muted);line-height:1.5}
 .ls-fnow{display:none}
@@ -102,8 +235,8 @@ html,body{margin:0;background:#f5ebd7}
 .ls-path::after{content:"";position:absolute;left:0;right:0;bottom:14px;border-bottom:3px dashed #c9b48a}
 .ls-meet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center}
 .ls-bubble{font-family:'Baloo 2',sans-serif;font-weight:600;font-size:18px;line-height:1.3;background:var(--surface);border:1px solid var(--line);border-radius:22px 22px 22px 6px;padding:12px 18px;width:fit-content;max-width:100%}
-.ls-chip{font:800 15px 'Nunito',system-ui,sans-serif;min-height:44px;padding:0 18px;border-radius:99px;border:2px solid var(--deep);background:var(--surface);color:var(--deep);cursor:pointer}
-.ls-chip:hover{background:var(--soft)}
+.ls-chip{font:800 15px 'Nunito',system-ui,sans-serif;min-height:44px;padding:0 18px;border-radius:99px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;box-shadow:var(--sh-soft);transition:background .15s,color .15s}
+.ls-chip:hover{background:#4a5a35;color:#fffbf2;border-color:#4a5a35}
 /* the download card's background is painted below the canvas so Leafity can stand inside the card */
 .ls-contain{max-width:1120px;margin:0 auto;padding:0 24px}
 .ls-dlbg{background:var(--surface);border:1px solid var(--line);border-radius:32px}
@@ -123,6 +256,9 @@ html,body{margin:0;background:#f5ebd7}
 .ls-foot .in{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:44px 24px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:28px}
 .ls-perch{height:120px;width:150px;margin-left:auto}
 @media (max-width:980px){
+  .ls-hphone{width:28%;right:4%}
+  .ls-herospot{left:14%;right:30%}
+  .ls-say{width:min(54%,230px)}
   .ls-g4{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ls-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ls-feat,.ls-meet,.ls-dl,.ls-faqgrid{grid-template-columns:minmax(0,1fr)}
@@ -146,6 +282,13 @@ html,body{margin:0;background:#f5ebd7}
   .ls-herotext > *{order:2}
   .ls-herotext > .ls-eyebrow,.ls-herotext > h1{order:0}
   .ls-stage{min-height:240px}
+  .ls-corner{min-height:300px}
+  .ls-hphone,.ls-say,.ls-trellis,.ls-climb{display:none}
+  .ls-room{left:0}
+  .ls-window{left:8%;right:8%}
+  .ls-floorlight{display:none}
+  .ls-herospot{left:20%;right:20%;top:4%}
+  .ls-pot.tomato{width:22%;left:-2%}.ls-pot.egg{width:17%;right:-2%}
   .ls-garland{height:178px}
   .ls-g4,.ls-steps{grid-template-columns:minmax(0,1fr)}
   .ls-featlist{gap:10px}
@@ -153,6 +296,10 @@ html,body{margin:0;background:#f5ebd7}
   .ls-fbtn .ls-fdesc{display:none}
   .ls-fnow{display:block}
   .ls-path{height:132px}
+  .ls-meetscene .hang,.ls-meetscene .table{display:none}
+  .ls-featlist{padding:10px}
+  .ls-benchdeco{display:none}
+  .ls-step::after{width:24px;height:24px}
   .ls-dl{padding:24px 20px}
   .ls-facts{grid-template-columns:minmax(0,1fr)}
   .ls-foot .in{grid-template-columns:minmax(0,1fr)}
@@ -162,6 +309,8 @@ html,body{margin:0;background:#f5ebd7}
   html{scroll-behavior:auto}
   .ls-scroll span{animation:none}
   .ls-btn{transition:none}
+  .ls-sun,.ls-beams,.ls-sway,.ls-hphone,.ls-say{animation:none}
+  .ls-hphone,.ls-card,.ls-fbtn,.ls-faq details,.ls-faq summary::before{transition:none}
 }
 </style>
 <style>
@@ -189,6 +338,27 @@ html,body{margin:0;background:#f5ebd7}
 .pm-s{font-size:5.6cqw;font-weight:700;line-height:1.3;color:#6a5a45}
 .pm-chip{font-size:5.4cqw;font-weight:800;border-radius:99px;padding:1.4cqw 3.6cqw;background:#fffbf2;color:#704a2d}
 .pm-chip.on{background:#91be58;color:#26361d}
+.pm-eyebrow{font-size:5cqw;font-weight:800;letter-spacing:.14em;color:#704a2d}
+.pm-scene{position:relative;border-radius:6cqw;background:#ead9b8;overflow:hidden;height:44cqw;flex:none}
+.pm-win{position:absolute;left:24%;right:6%;top:7%;height:56%;border:1.4cqw solid #c9a77a;background:#efe0c4 linear-gradient(90deg,transparent 31%,#c9a77a 31% 35%,transparent 35% 64%,#c9a77a 64% 68%,transparent 68%),linear-gradient(180deg,transparent 46%,#c9a77a 46% 54%,transparent 54%)}
+.pm-buddy{position:absolute;left:7%;bottom:14%;width:24%;aspect-ratio:1;border-radius:30% 30% 34% 34%;background:#a9c98a;box-shadow:inset 0 -3cqw 0 #8fb36f}
+.pm-say{position:absolute;right:5%;bottom:13%;width:52%;background:#fffaf0;border-radius:4cqw;padding:3cqw;display:flex;flex-direction:column;gap:1.6cqw}
+.pm-say b{font-size:4cqw;letter-spacing:.14em;color:#704a2d}
+.pm-shelf{display:flex;align-items:flex-end;gap:3cqw;padding:0 2cqw}
+.pm-potsvg{flex:1;display:flex;flex-direction:column;align-items:center}
+.pm-potsvg svg{width:100%;height:auto;display:block}
+.pm-plank{height:3cqw;border-radius:1cqw;background:#b98a56;box-shadow:0 1cqw 0 #8a6036}
+.pm-new{flex:1;align-self:stretch;border:.8cqw dashed #b99f74;border-radius:4cqw;display:grid;place-items:center;font-size:5cqw;font-weight:800;color:#704a2d;text-align:center}
+.pm-nav{margin-top:auto;display:flex;background:#fffaf0;border-radius:99px;padding:1.6cqw}
+.pm-nav span{flex:1;text-align:center;font-size:4.8cqw;font-weight:800;padding:2cqw 0;border-radius:99px;color:#30291e}
+.pm-nav span.on{background:#e1efcb}
+.pm-tiles{display:flex;gap:3cqw}
+.pm-tile{flex:1;background:#fffaf0;border:.6cqw solid #e3d3b3;border-radius:5cqw;padding:3cqw;display:flex;flex-direction:column;align-items:center;gap:2cqw}
+.pm-tile.on{background:#e1ebcd;border-color:#4a5a35}
+.pm-arch{width:70%;aspect-ratio:.9;border-radius:50% 50% 10% 10% / 40% 40% 8% 8%;background:#f6eedf;display:grid;place-items:end center;overflow:hidden}
+.pm-arch svg{width:100%;height:auto}
+.pm-tile .pm-t{text-align:center;font-size:5.4cqw}
+.pm-chip.dk{background:#4a5a35;color:#fffbf2}
 .pm-pot{flex:1;display:flex;flex-direction:column;align-items:center;gap:0}
 .pm-leaf{width:44%;aspect-ratio:1.6;border-radius:60% 60% 10% 60%;background:#91be58}
 .pm-clay{width:70%;aspect-ratio:1.15;background:#c98a5e;border-radius:10% 10% 28% 28%}
@@ -217,7 +387,7 @@ html,body{margin:0;background:#f5ebd7}
 
   <main>
     <section id="home" class="ls-sec" data-ls-sec="home" style="padding-top:56px">
-      <svg class="ls-deco" style="right:-40px;top:20px" width="320" height="320" viewBox="0 0 320 320" aria-hidden="true"><circle cx="190" cy="170" r="150" fill="#ecdfc4"></circle><path d="M40 300 110 250 60 230Z" fill="#e1efcb"></path><path d="M270 40 300 90 250 80Z" fill="#d5e8b6"></path></svg>
+      
       <svg class="ls-deco" style="left:-70px;bottom:-20px" width="180" height="150" viewBox="0 0 180 150" aria-hidden="true"><path d="M10 140C40 90 90 60 170 50" stroke="#b9a57c" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M52 96c-2-18 8-30 26-34 2 18-8 30-26 34Z" fill="#c5dea0"></path><path d="M100 70c-6-16 0-30 16-38 6 16 0 30-16 38Z" fill="#91be58"></path><path d="M140 56c-2-14 6-24 20-28 2 14-6 24-20 28Z" fill="#c5dea0"></path></svg>
       <div class="ls-wrap ls-hero">
         <div class="ls-herotext">
@@ -238,14 +408,121 @@ html,body{margin:0;background:#f5ebd7}
           </div>
           <a class="ls-scroll" href="#about"><span aria-hidden="true">↓</span> Scroll to see what LeafSpectra is</a>
         </div>
-        <div class="ls-stage" data-ls="hero-stage">
-          <x-if data-if="noWebgl" hidden="">
-            <div class="ls-fallback">Leafity, the LeafSpectra mascot, appears here in 3D. Your browser could not start the 3D view.</div>
-          </x-if>
+        <div class="ls-stage ls-corner">
+          <div class="ls-scene" aria-hidden="true">
+            <div class="ls-room"></div>
+            <div class="ls-window">
+              <div class="ls-sun"></div>
+              <div class="ls-beams"></div>
+            </div>
+            <div class="ls-floorlight"></div>
+            <svg class="ls-ivy l" viewBox="0 0 110 120"><path d="M4 4C40 6 70 4 108 2M14 4c10 20 6 40 14 58s10 34 14 50" fill="none" stroke="#5d6b3a" stroke-width="2" stroke-linecap="round"></path><g fill="#8fb35a" stroke="#3e3a2a" stroke-width="1.3" stroke-linejoin="round"><path class="ls-sway" d="M22 22c-8 0-12 6-10 12 8 0 12-6 10-12Z"></path><path class="ls-sway b" d="M40 44c-8-2-13 3-12 10 8 1 13-4 12-10Z"></path><path class="ls-sway c" d="M30 70c-8 0-12 6-10 12 8 0 12-6 10-12Z"></path><path class="ls-sway" d="M48 92c-8-2-13 3-12 10 8 1 13-4 12-10Z"></path><path class="ls-sway b" d="M62 18c-6-5-13-3-15 3 6 5 13 3 15-3Z"></path><path class="ls-sway c" d="M90 10c-6-5-13-3-15 3 6 5 13 3 15-3Z"></path></g></svg>
+            <svg class="ls-ivy r" viewBox="0 0 110 120"><path d="M4 4C40 6 70 4 108 2M14 4c10 20 6 40 14 58s10 34 14 50" fill="none" stroke="#5d6b3a" stroke-width="2" stroke-linecap="round"></path><g fill="#8fb35a" stroke="#3e3a2a" stroke-width="1.3" stroke-linejoin="round"><path class="ls-sway" d="M22 22c-8 0-12 6-10 12 8 0 12-6 10-12Z"></path><path class="ls-sway b" d="M40 44c-8-2-13 3-12 10 8 1 13-4 12-10Z"></path><path class="ls-sway c" d="M30 70c-8 0-12 6-10 12 8 0 12-6 10-12Z"></path><path class="ls-sway" d="M48 92c-8-2-13 3-12 10 8 1 13-4 12-10Z"></path><path class="ls-sway b" d="M62 18c-6-5-13-3-15 3 6 5 13 3 15-3Z"></path><path class="ls-sway c" d="M90 10c-6-5-13-3-15 3 6 5 13 3 15-3Z"></path></g></svg>
+            <div class="ls-trellis"></div>
+            <svg class="ls-climb" viewBox="0 0 100 260"><path d="M60 258C40 210 70 170 48 130S62 60 44 10" fill="none" stroke="#5d7a3e" stroke-width="3" stroke-linecap="round"></path><g fill="#91be58" stroke="#405c35" stroke-width="1.6" stroke-linejoin="round"><path class="ls-sway" d="M50 210c-16-2-24 6-26 18 14 2 24-4 26-18Z"></path><path class="ls-sway b" d="M56 160c14-6 26-2 30 10-14 6-26 2-30-10Z"></path><path class="ls-sway c" d="M50 104c-16-4-26 2-30 14 14 4 26-2 30-14Z"></path><path class="ls-sway" d="M52 54c12-8 24-6 30 4-12 8-24 6-30-4Z"></path></g></svg>
+            <div class="ls-shelf"><i></i><i></i></div>
+            <svg class="ls-pot tomato" viewBox="0 0 120 170" overflow="visible"><path d="M60 98C58 70 50 50 34 34M60 92C64 64 76 44 92 30M60 100C60 70 60 40 62 14" fill="none" stroke="#4f7034" stroke-width="3.2" stroke-linecap="round"></path><g fill="#91be58" stroke="#3e3a2a" stroke-width="1.6" stroke-linejoin="round"><path class="ls-sway" d="M36 60c-16-2-24 8-24 20 14 0 24-6 24-20Z"></path><path class="ls-sway b" d="M84 52c16-4 26 4 28 16-14 2-24-4-28-16Z"></path><path class="ls-sway c" d="M62 24c-10-12-24-12-30-2 10 10 22 10 30 2Z"></path><path class="ls-sway" d="M64 40c8-12 22-14 30-6-8 12-22 12-30 6Z"></path></g><g stroke="#8c2a17" stroke-width="1.4"><circle cx="40" cy="44" r="10" fill="#d94a2b"></circle><circle cx="90" cy="38" r="9" fill="#e0603c"></circle><circle cx="70" cy="76" r="8" fill="#d94a2b"></circle></g><g fill="#5d7a3e"><path d="M36 35l4 4 4-4-4 2Z"></path><path d="M86 30l4 4 4-4-4 2Z"></path></g><path d="M22 106h76l-7 58H29Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="2" stroke-linejoin="round"></path><path d="M18 96h84v11H18Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="2" stroke-linejoin="round"></path><path d="M30 122l5 6 5-6l5 6 5-6l5 6 5-6l5 6 5-6l5 6 5-6l5 6 5-6" fill="none" stroke="#8a4a2a" stroke-width="1.6" stroke-linejoin="round"></path><path d="M92 98V68" stroke="#a07848" stroke-width="2.2" stroke-linecap="round"></path><path d="M92 68h16l-4 5 4 5h-16Z" fill="#e0c592" stroke="#a07848" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+            <div class="ls-hphone"><x-dc data-dc="PhoneMockup" data-props-tmpl="{&quot;screen&quot;:&quot;leafity&quot;,&quot;tilt&quot;:&quot;{{heroTilt}}&quot;}">
+
+<div class="pm pm-float" data-b-class="pm {{floatCls}}" style="rotate:-4deg" data-b-style="rotate:{{tiltDeg}}" role="img" aria-label="Concept preview (not a real screenshot) of the Ask Leafity chat" data-b-aria-label="{{ariaLabel}}">
+  <div class="pm-body"></div>
+  <div class="pm-btn" style="top:22%;height:9%"></div>
+  <div class="pm-btn" style="top:34%;height:5%"></div>
+  <div class="pm-screen">
+    <div class="pm-cam"></div>
+    <x-if data-if="hasImage" hidden="">
+      <img class="pm-img" data-b-src="{{image}}" alt="">
+    </x-if>
+    <x-if data-if="isHome" hidden="">
+      <div class="pm-pad" style="gap:4.5cqw">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Your sunlit corner</p>
+        <div class="pm-scene"><div class="pm-win"></div><div class="pm-buddy"></div><div class="pm-say"><b>LEAFITY</b><div class="pm-bar" style="width:92%"></div><div class="pm-bar" style="width:60%"></div></div></div>
+        <div class="pm-card" style="background:#ead9b8;gap:2cqw">
+          <div class="pm-eyebrow">YOUR SHELF</div>
+          <div class="pm-shelf"><div class="pm-potsvg"><svg viewBox="0 0 60 80"><g transform="translate(0 2)"><path d="M30 52V30M30 36c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 36c-6-2-10 2-10 7 6 1 10-2 10-7Z"></path><path d="M46 31c6-3 10 0 11 5-6 2-10-1-11-5Z"></path><path d="M30 26c-3-7-10-9-14-5 3 6 10 8 14 5Z"></path><path d="M30 26c3-7 10-9 14-5-3 6-10 8-14 5Z"></path></g><circle cx="36" cy="44" r="7" fill="#e0603c" stroke="#3e3a2a" stroke-width="1.4"></circle><circle cx="25" cy="42" r="5" fill="#b9c46a" stroke="#3e3a2a" stroke-width="1.4"></circle></g><path d="M14 58h32l-4 20H18Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"></path><path d="M12 54h36v6H12Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="1.4"></path><path d="M17 66l4 4 4-4 4 4 4-4 4 4 4-4" fill="none" stroke="#8a4a2a" stroke-width="1.2"></path><path d="M44 52V38" stroke="#b98a56" stroke-width="1.6"></path><path d="M44 38h9l-2 3 2 3h-9Z" fill="#e0c592" stroke="#b98a56" stroke-width="1"></path></svg></div><div class="pm-potsvg"><svg viewBox="0 0 60 80"><g transform="translate(0 2)"><path d="M30 54V28M30 34c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 34c-7-2-11 3-10 8 7 1 11-3 10-8Z"></path><path d="M46 31c7-3 11 1 11 6-7 2-11-2-11-6Z"></path><path d="M30 26c-3-8-11-10-15-5 3 7 11 9 15 5Z"></path><path d="M30 26c3-8 11-10 15-5-3 7-11 9-15 5Z"></path></g><path d="M38 38c-5 1-7 9-4 14 3 4 8 2 8-4 0-5-1-9-4-10Z" fill="#6b3f86" stroke="#3e3a2a" stroke-width="1.4"></path><circle cx="20" cy="22" r="3" fill="#b48ad0" stroke="#3e3a2a" stroke-width="1"></circle></g><path d="M14 58h32l-4 20H18Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"></path><path d="M12 54h36v6H12Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="1.4"></path><path d="M17 66l4 4 4-4 4 4 4-4 4 4 4-4" fill="none" stroke="#8a4a2a" stroke-width="1.2"></path><path d="M44 52V38" stroke="#b98a56" stroke-width="1.6"></path><path d="M44 38h9l-2 3 2 3h-9Z" fill="#e0c592" stroke="#b98a56" stroke-width="1"></path></svg></div><div class="pm-new">+<br>New pot</div></div>
+          <div class="pm-plank"></div>
+        </div>
+        <div class="pm-nav"><span class="on">Garden</span><span>Grow</span><span>Leafity</span></div>
+      </div>
+    </x-if>
+    <x-if data-if="isGrow" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">What can I grow?</p>
+        <div class="pm-s">Based on your growing setup</div>
+        <div class="pm-tiles">
+          <div class="pm-tile on"><div class="pm-arch"><svg viewBox="0 0 60 60"><path d="M30 52V30M30 36c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 36c-6-2-10 2-10 7 6 1 10-2 10-7Z"></path><path d="M46 31c6-3 10 0 11 5-6 2-10-1-11-5Z"></path><path d="M30 26c-3-7-10-9-14-5 3 6 10 8 14 5Z"></path><path d="M30 26c3-7 10-9 14-5-3 6-10 8-14 5Z"></path></g><circle cx="36" cy="44" r="7" fill="#e0603c" stroke="#3e3a2a" stroke-width="1.4"></circle><circle cx="25" cy="42" r="5" fill="#b9c46a" stroke="#3e3a2a" stroke-width="1.4"></circle></svg></div><div class="pm-t">Tomato (Kamatis)</div></div>
+          <div class="pm-tile"><div class="pm-arch"><svg viewBox="0 0 60 60"><path d="M30 54V28M30 34c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 34c-7-2-11 3-10 8 7 1 11-3 10-8Z"></path><path d="M46 31c7-3 11 1 11 6-7 2-11-2-11-6Z"></path><path d="M30 26c-3-8-11-10-15-5 3 7 11 9 15 5Z"></path><path d="M30 26c3-8 11-10 15-5-3 7-11 9-15 5Z"></path></g><path d="M38 38c-5 1-7 9-4 14 3 4 8 2 8-4 0-5-1-9-4-10Z" fill="#6b3f86" stroke="#3e3a2a" stroke-width="1.4"></path><circle cx="20" cy="22" r="3" fill="#b48ad0" stroke="#3e3a2a" stroke-width="1"></circle></svg></div><div class="pm-t">Eggplant (Talong)</div></div>
+        </div>
+      </div>
+    </x-if>
+    <x-if data-if="isGuide" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Growing guide</p>
+        <div class="pm-row" style="flex-wrap:wrap;gap:2.4cqw"><span class="pm-chip">Seed</span><span class="pm-chip dk">Sprout</span><span class="pm-chip">Growing</span><span class="pm-chip">Harvest</span></div>
+        <div class="pm-card"><div class="pm-t">Step 1</div><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:72%"></div></div>
+        <div class="pm-card"><div class="pm-t">Step 2</div><div class="pm-bar" style="width:88%"></div><div class="pm-bar" style="width:56%"></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isCare" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Care records</p>
+        <div class="pm-card">
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw;background:#91be58"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw;background:#91be58"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+        </div>
+        <div class="pm-card" style="background:#e1efcb"><div class="pm-t">Reminder</div><div class="pm-bar g" style="width:80%"></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isObserve" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Guided observation</p>
+        <div style="flex:1;min-height:0;border-radius:6cqw;background:#3d4a34;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="width:62%;aspect-ratio:.8;border:1.2cqw dashed #e1efcb;border-radius:60% 60% 60% 60% / 70% 70% 40% 40%"></div>
+          <div style="position:absolute;left:0;right:0;bottom:6%;text-align:center;font-size:5.6cqw;font-weight:800;color:#fffbf2">Fit one leaf inside the guide</div>
+        </div>
+        <div style="align-self:center;width:17cqw;aspect-ratio:1;border-radius:50%;background:#fffbf2;border:1.6cqw solid #91be58"></div>
+      </div>
+    </x-if>
+    <x-if data-if="isMonitor" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Changes over time</p>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot" style="border-radius:4cqw"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Observation</div><div class="pm-bar" style="width:80%"></div></div></div></div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot" style="border-radius:4cqw"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Observation</div><div class="pm-bar" style="width:66%"></div></div></div></div>
+        <div class="pm-s" style="text-align:center">Visible changes only — not a diagnosis</div>
+      </div>
+    </x-if>
+    <x-if data-if="isLeafity">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Ask Leafity</p>
+        <div class="pm-row" style="align-items:flex-start"><div class="pm-dot" style="width:10cqw;background:#91be58"></div><div class="pm-card" style="flex:1;border-radius:2cqw 6cqw 6cqw 6cqw"><div class="pm-bar" style="width:90%"></div><div class="pm-bar" style="width:60%"></div></div></div>
+        <div class="pm-card" style="align-self:flex-end;width:62%;background:#e1efcb;border-radius:6cqw 2cqw 6cqw 6cqw"><div class="pm-bar g" style="width:86%"></div></div>
+        <div class="pm-row" style="align-items:flex-start"><div class="pm-dot" style="width:10cqw;background:#91be58"></div><div class="pm-card" style="flex:1;border-radius:2cqw 6cqw 6cqw 6cqw"><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:78%"></div><div class="pm-bar" style="width:40%"></div></div></div>
+        <div style="margin-top:auto" class="pm-card"><div class="pm-s">English · Filipino</div></div>
+      </div>
+    </x-if>
+  </div>
+</div>
+</x-dc></div>
+            <svg class="ls-pot egg" viewBox="0 0 100 150" overflow="visible"><path d="M50 84C48 60 40 44 28 34M50 80c4-22 14-38 26-46" fill="none" stroke="#4f7034" stroke-width="3" stroke-linecap="round"></path><g fill="#8fb35a" stroke="#3e3a2a" stroke-width="1.5" stroke-linejoin="round"><path class="ls-sway b" d="M28 50c-14-4-22 4-24 14 12 2 22-2 24-14Z"></path><path class="ls-sway c" d="M72 40c14-6 24 0 26 10-12 4-22 0-26-10Z"></path><path class="ls-sway" d="M50 30c-6-12-18-16-26-10 6 12 18 14 26 10Z"></path></g><path d="M40 60c-8 4-10 18-4 26 6 6 14 2 14-8 0-8-4-16-10-18Z" fill="#6b3f86" stroke="#3f2350" stroke-width="1.6"></path><path d="M38 58l6-4 6 5-6 2Z" fill="#5d7a3e"></path><path d="M20 92h60l-7 52H27Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="2" stroke-linejoin="round"></path><path d="M16 82h68v11H16Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="2" stroke-linejoin="round"></path><path d="M28 108l5 6 5-6l5 6 5-6l5 6 5-6l5 6 5-6" fill="none" stroke="#8a4a2a" stroke-width="1.6" stroke-linejoin="round"></path><path d="M76 84V54" stroke="#a07848" stroke-width="2.2" stroke-linecap="round"></path><path d="M76 54h16l-4 5 4 5h-16Z" fill="#e0c592" stroke="#a07848" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+          </div>
+          <div class="ls-herospot" data-ls="hero-stage">
+            <x-if data-if="noWebgl" hidden="">
+              <div class="ls-fallback">Leafity, the LeafSpectra mascot, appears here in 3D. Your browser could not start the 3D view.</div>
+            </x-if>
+          </div>
+          <div class="ls-say" data-ls="hero-say" aria-hidden="true"><div class="who">LEAFITY</div><p>Need a hand? Pick a plant, and we'll find the next little step together.</p></div>
         </div>
       </div>
     </section>
-    <section id="about" class="ls-sec" data-ls-sec="about" style="background:#fbf3e2">
+    <section id="about" class="ls-sec ls-tint" data-ls-sec="about">
       <div class="ls-wrap">
         <div class="ls-head" data-ls="about-head">
           <div class="ls-eyebrow">What is LeafSpectra?</div>
@@ -256,22 +533,22 @@ html,body{margin:0;background:#f5ebd7}
           <svg data-ls="about-vine" viewBox="-14 -8 628 70" width="600" height="67"><g fill="none" stroke="#8a7a52" stroke-linecap="round"><path d="M20 10C160 46 440 46 580 10" stroke-width="2.5"></path><path d="M20 10c-8 1-12 8-8 13s11 2 9-4" stroke-width="2"></path><path d="M580 10c8 1 12 8 8 13s-11 2-9-4" stroke-width="2"></path></g><g fill="#b98a56" stroke="#704a2d" stroke-width="1.6"><circle cx="20" cy="8" r="5"></circle><circle cx="580" cy="8" r="5"></circle></g><g fill="#a9cf78" stroke="#405c35" stroke-width="1.6" stroke-linejoin="round"><path d="M72 21c-4 10 0 18 10 22 4-10 0-18-10-22Z"></path><path d="M104 26c6 8 14 10 23 6-6-9-14-11-23-6Z"></path><path d="M180 36c-3 10 2 17 12 20 3-10-2-17-12-20Z"></path><path d="M216 38c7 7 15 8 23 3-7-8-15-9-23-3Z"></path><path d="M292 40c-2 9 3 15 11 16 2-9-2-15-11-16Z"></path><path d="M368 38c-7 7-15 8-23 3 7-8 15-9 23-3Z"></path><path d="M404 36c3 10-2 17-12 20-3-10 2-17 12-20Z"></path><path d="M480 26c-6 8-14 10-23 6 6-9 14-11 23-6Z"></path><path d="M512 21c4 10 0 18-10 22-4-10 0-18 10-22Z"></path></g></svg>
         </div>
         <div class="ls-g4">
-          <div class="ls-card" data-ls="about-card">
+          <div class="ls-card jr" data-ls="about-card"><span class="ls-tape l" aria-hidden="true"></span>
             <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 12 13 4l9 8v10H4Z" fill="#b6d886" stroke="#405c35" stroke-width="2" stroke-linejoin="round"></path><circle cx="20" cy="5" r="3" fill="#f2c14e"></circle></svg></div>
             <h3>Understand your growing space</h3>
             <p class="ls-fdesc">Describe where you live and how you grow at home, so guidance can fit your conditions.</p>
           </div>
-          <div class="ls-card" data-ls="about-card">
-            <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 23V12" stroke="#405c35" stroke-width="2.4" stroke-linecap="round"></path><path d="M13 13C7 13 4 9 4 4c6 0 9 3 9 9ZM13 11c0-5 3-8 9-8 0 6-3 9-9 8Z" fill="#91be58" stroke="#405c35" stroke-width="2" stroke-linejoin="round"></path></svg></div>
+          <div class="ls-card pk" data-ls="about-card">
+            <div class="ls-arches" aria-hidden="true"><span><svg viewBox="0 0 60 60"><path d="M30 58V30M30 36c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 36c-6-2-10 2-10 7 6 1 10-2 10-7Z"></path><path d="M46 31c6-3 10 0 11 5-6 2-10-1-11-5Z"></path><path d="M30 26c-3-7-10-9-14-5 3 6 10 8 14 5Z"></path><path d="M30 26c3-7 10-9 14-5-3 6-10 8-14 5Z"></path></g><circle cx="36" cy="46" r="8" fill="#e0603c" stroke="#3e3a2a" stroke-width="1.4"></circle><circle cx="24" cy="44" r="5.5" fill="#b9c46a" stroke="#3e3a2a" stroke-width="1.4"></circle></svg></span><span><svg viewBox="0 0 60 60"><path d="M30 58V28M30 34c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 34c-7-2-11 3-10 8 7 1 11-3 10-8Z"></path><path d="M46 31c7-3 11 1 11 6-7 2-11-2-11-6Z"></path><path d="M30 26c-3-8-11-10-15-5 3 7 11 9 15 5Z"></path><path d="M30 26c3-8 11-10 15-5-3 7-11 9-15 5Z"></path></g><path d="M38 38c-5 1-7 10-4 15 3 4 9 2 9-4 0-6-2-10-5-11Z" fill="#6b3f86" stroke="#3e3a2a" stroke-width="1.4"></path><circle cx="20" cy="22" r="3" fill="#b48ad0" stroke="#3e3a2a" stroke-width="1"></circle></svg></span></div>
             <h3>Learn which vegetables may suit you</h3>
             <p class="ls-fdesc">See vegetable suggestions matched to your location and home-growing setup.</p>
           </div>
-          <div class="ls-card" data-ls="about-card">
+          <div class="ls-card lb" data-ls="about-card">
             <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="5" y="3" width="16" height="20" rx="3" fill="#fffbf2" stroke="#405c35" stroke-width="2"></rect><path d="M9 9h8M9 13h8M9 17h5" stroke="#91be58" stroke-width="2.2" stroke-linecap="round"></path></svg></div>
             <h3>Follow planting and care guidance</h3>
             <p class="ls-fdesc">Beginner-friendly instructions and care tips for each growth stage, with weather-aware advice and reminders.</p>
           </div>
-          <div class="ls-card" data-ls="about-card">
+          <div class="ls-card nt" data-ls="about-card"><span class="ls-tape r" aria-hidden="true"></span>
             <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 21h18" stroke="#405c35" stroke-width="2.2" stroke-linecap="round"></path><path d="M6 17l5-5 4 3 6-8" fill="none" stroke="#405c35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21" cy="7" r="2.6" fill="#91be58"></circle></svg></div>
             <h3>Keep track of plant progress</h3>
             <p class="ls-fdesc">Each plant keeps its own profile, care records and history, so you can look back on how it has grown.</p>
@@ -344,22 +621,16 @@ html,body{margin:0;background:#f5ebd7}
       <img class="pm-img" data-b-src="{{image}}" alt="">
     </x-if>
     <x-if data-if="isHome" hidden="">
-      <div class="pm-pad">
+      <div class="pm-pad" style="gap:4.5cqw">
         <div class="pm-tag">Concept preview</div>
-        <p class="pm-h">My garden</p>
-        <div class="pm-card" style="background:#ecdcbd">
-          <div class="pm-row" style="align-items:flex-end;gap:3cqw">
-            <div class="pm-pot"><div class="pm-leaf"></div><div class="pm-clay"></div></div>
-            <div class="pm-pot"><div class="pm-leaf" style="width:36%"></div><div class="pm-clay"></div></div>
-            <div class="pm-pot"><div class="pm-leaf" style="width:24%"></div><div class="pm-clay"></div></div>
-          </div>
-          <div class="pm-bar" style="background:#b98a56;height:2.6cqw"></div>
+        <p class="pm-h">Your sunlit corner</p>
+        <div class="pm-scene"><div class="pm-win"></div><div class="pm-buddy"></div><div class="pm-say"><b>LEAFITY</b><div class="pm-bar" style="width:92%"></div><div class="pm-bar" style="width:60%"></div></div></div>
+        <div class="pm-card" style="background:#ead9b8;gap:2cqw">
+          <div class="pm-eyebrow">YOUR SHELF</div>
+          <div class="pm-shelf"><div class="pm-potsvg"><svg viewBox="0 0 60 80"><g transform="translate(0 2)"><path d="M30 52V30M30 36c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 36c-6-2-10 2-10 7 6 1 10-2 10-7Z"></path><path d="M46 31c6-3 10 0 11 5-6 2-10-1-11-5Z"></path><path d="M30 26c-3-7-10-9-14-5 3 6 10 8 14 5Z"></path><path d="M30 26c3-7 10-9 14-5-3 6-10 8-14 5Z"></path></g><circle cx="36" cy="44" r="7" fill="#e0603c" stroke="#3e3a2a" stroke-width="1.4"></circle><circle cx="25" cy="42" r="5" fill="#b9c46a" stroke="#3e3a2a" stroke-width="1.4"></circle></g><path d="M14 58h32l-4 20H18Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"></path><path d="M12 54h36v6H12Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="1.4"></path><path d="M17 66l4 4 4-4 4 4 4-4 4 4 4-4" fill="none" stroke="#8a4a2a" stroke-width="1.2"></path><path d="M44 52V38" stroke="#b98a56" stroke-width="1.6"></path><path d="M44 38h9l-2 3 2 3h-9Z" fill="#e0c592" stroke="#b98a56" stroke-width="1"></path></svg></div><div class="pm-potsvg"><svg viewBox="0 0 60 80"><g transform="translate(0 2)"><path d="M30 54V28M30 34c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 34c-7-2-11 3-10 8 7 1 11-3 10-8Z"></path><path d="M46 31c7-3 11 1 11 6-7 2-11-2-11-6Z"></path><path d="M30 26c-3-8-11-10-15-5 3 7 11 9 15 5Z"></path><path d="M30 26c3-8 11-10 15-5-3 7-11 9-15 5Z"></path></g><path d="M38 38c-5 1-7 9-4 14 3 4 8 2 8-4 0-5-1-9-4-10Z" fill="#6b3f86" stroke="#3e3a2a" stroke-width="1.4"></path><circle cx="20" cy="22" r="3" fill="#b48ad0" stroke="#3e3a2a" stroke-width="1"></circle></g><path d="M14 58h32l-4 20H18Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"></path><path d="M12 54h36v6H12Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="1.4"></path><path d="M17 66l4 4 4-4 4 4 4-4 4 4 4-4" fill="none" stroke="#8a4a2a" stroke-width="1.2"></path><path d="M44 52V38" stroke="#b98a56" stroke-width="1.6"></path><path d="M44 38h9l-2 3 2 3h-9Z" fill="#e0c592" stroke="#b98a56" stroke-width="1"></path></svg></div><div class="pm-new">+<br>New pot</div></div>
+          <div class="pm-plank"></div>
         </div>
-        <div class="pm-card">
-          <div class="pm-t">Next little step</div>
-          <div class="pm-bar g" style="width:92%"></div>
-          <div class="pm-bar g" style="width:64%"></div>
-        </div>
+        <div class="pm-nav"><span class="on">Garden</span><span>Grow</span><span>Leafity</span></div>
       </div>
     </x-if>
     <x-if data-if="isGrow">
@@ -367,16 +638,17 @@ html,body{margin:0;background:#f5ebd7}
         <div class="pm-tag">Concept preview</div>
         <p class="pm-h">What can I grow?</p>
         <div class="pm-s">Based on your growing setup</div>
-        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:85%"></div></div></div></div>
-        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:70%"></div></div></div></div>
-        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:78%"></div></div></div></div>
+        <div class="pm-tiles">
+          <div class="pm-tile on"><div class="pm-arch"><svg viewBox="0 0 60 60"><path d="M30 52V30M30 36c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 36c-6-2-10 2-10 7 6 1 10-2 10-7Z"></path><path d="M46 31c6-3 10 0 11 5-6 2-10-1-11-5Z"></path><path d="M30 26c-3-7-10-9-14-5 3 6 10 8 14 5Z"></path><path d="M30 26c3-7 10-9 14-5-3 6-10 8-14 5Z"></path></g><circle cx="36" cy="44" r="7" fill="#e0603c" stroke="#3e3a2a" stroke-width="1.4"></circle><circle cx="25" cy="42" r="5" fill="#b9c46a" stroke="#3e3a2a" stroke-width="1.4"></circle></svg></div><div class="pm-t">Tomato (Kamatis)</div></div>
+          <div class="pm-tile"><div class="pm-arch"><svg viewBox="0 0 60 60"><path d="M30 54V28M30 34c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 34c-7-2-11 3-10 8 7 1 11-3 10-8Z"></path><path d="M46 31c7-3 11 1 11 6-7 2-11-2-11-6Z"></path><path d="M30 26c-3-8-11-10-15-5 3 7 11 9 15 5Z"></path><path d="M30 26c3-8 11-10 15-5-3 7-11 9-15 5Z"></path></g><path d="M38 38c-5 1-7 9-4 14 3 4 8 2 8-4 0-5-1-9-4-10Z" fill="#6b3f86" stroke="#3e3a2a" stroke-width="1.4"></path><circle cx="20" cy="22" r="3" fill="#b48ad0" stroke="#3e3a2a" stroke-width="1"></circle></svg></div><div class="pm-t">Eggplant (Talong)</div></div>
+        </div>
       </div>
     </x-if>
     <x-if data-if="isGuide" hidden="">
       <div class="pm-pad">
         <div class="pm-tag">Concept preview</div>
         <p class="pm-h">Growing guide</p>
-        <div class="pm-row" style="flex-wrap:wrap;gap:2.4cqw"><span class="pm-chip">Seed</span><span class="pm-chip on">Sprout</span><span class="pm-chip">Growing</span><span class="pm-chip">Harvest</span></div>
+        <div class="pm-row" style="flex-wrap:wrap;gap:2.4cqw"><span class="pm-chip">Seed</span><span class="pm-chip dk">Sprout</span><span class="pm-chip">Growing</span><span class="pm-chip">Harvest</span></div>
         <div class="pm-card"><div class="pm-t">Step 1</div><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:72%"></div></div>
         <div class="pm-card"><div class="pm-t">Step 2</div><div class="pm-bar" style="width:88%"></div><div class="pm-bar" style="width:56%"></div></div>
       </div>
@@ -426,13 +698,15 @@ html,body{margin:0;background:#f5ebd7}
   </div>
 </div>
 </x-dc></div>
+              <div class="ls-bench" aria-hidden="true"></div>
+              <svg class="ls-benchdeco" style="right:-13%" viewBox="0 0 60 80" aria-hidden="true"><path d="M8 14h44v62H8Z" fill="#fdf3df" stroke="#b98a56" stroke-width="2" stroke-linejoin="round"></path><path d="M8 14l4-6h36l4 6" fill="#eef4dc" stroke="#b98a56" stroke-width="2" stroke-linejoin="round"></path><path d="M8 26h44" stroke="#7d8f4e" stroke-width="1.5" stroke-dasharray="3 3"></path><circle cx="30" cy="48" r="11" fill="#d94a2b" stroke="#8c2a17" stroke-width="1.5"></circle><path d="M26 38l4 4 4-4-4 1Z" fill="#5d7a3e"></path><path d="M16 66h28" stroke="#b98a56" stroke-width="2" stroke-linecap="round"></path></svg>
             </div>
             <p class="ls-note" style="text-align:center">Concept preview — not a screenshot of the finished app.</p>
           </div>
         </div>
       </div>
     </section>
-    <section id="how" class="ls-sec" data-ls-sec="how" style="background:#fbf3e2">
+    <section id="how" class="ls-sec ls-tint" data-ls-sec="how">
       <div class="ls-wrap">
         <div class="ls-head">
           <div class="ls-eyebrow">How it works</div>
@@ -446,14 +720,19 @@ html,body{margin:0;background:#f5ebd7}
           <div class="ls-card ls-step" data-ls="how-step"><div class="num">4</div><h3>Complete guided observations</h3><p class="ls-fdesc">When your plant is eligible, the app guides you through taking suitable leaf photos.</p></div>
           <div class="ls-card ls-step" data-ls="how-step"><div class="num">5</div><h3>Review visible changes</h3><p class="ls-fdesc">See what has visibly changed over time, with Leafity's cautious explanations.</p></div>
         </div>
-        <div class="ls-path" data-ls="how-path" aria-hidden="true"></div>
+        <div class="ls-path" data-ls="how-path" aria-hidden="true"><i class="ls-rock" data-ls="how-rock"></i></div>
         <p class="ls-note" style="max-width:70ch">Visual monitoring needs suitable leaf images and is limited to the supported vegetables and observation steps. Its results describe visible changes — they are not confirmed diagnoses.</p>
       </div>
     </section>
     <section id="leafity" class="ls-sec" data-ls-sec="leafity">
-      <svg class="ls-deco" style="left:4%;top:60px" width="140" height="140" viewBox="0 0 140 140" aria-hidden="true"><path d="M20 120 70 20l50 100Z" fill="#ecdfc4"></path><path d="M70 20 95 70 45 70Z" fill="#e1efcb"></path></svg>
+      
       <div class="ls-wrap ls-meet">
         <div class="ls-stage" data-ls="meet-stage">
+          <div class="ls-scene ls-meetscene" aria-hidden="true">
+            <div class="rug"></div>
+            <svg class="hang" viewBox="0 0 100 190"><path d="M50 0v70M50 70 22 120M50 70l28 50M50 70v52" fill="none" stroke="#b98a56" stroke-width="2"></path><g fill="#91be58" stroke="#405c35" stroke-width="1.5" stroke-linejoin="round"><path class="ls-sway" d="M30 118c-14 6-18 20-12 32 12-6 16-18 12-32Z"></path><path class="ls-sway b" d="M70 118c14 6 18 20 12 32-12-6-16-18-12-32Z"></path><path class="ls-sway c" d="M50 112c-8-12-22-14-30-6 8 12 22 12 30 6Z"></path><path class="ls-sway" d="M50 112c8-12 22-14 30-6-8 12-22 12-30 6Z"></path></g><path d="M24 120h52l-6 36H30Z" fill="#c97a4f" stroke="#8a4a2a" stroke-width="2" stroke-linejoin="round"></path><path d="M40 156c-4 12 0 24 6 30M60 156c6 10 4 22-2 30" fill="none" stroke="#5d7a3e" stroke-width="2"></path><g fill="#a9cf78"><circle cx="42" cy="170" r="4"></circle><circle cx="62" cy="168" r="4"></circle><circle cx="48" cy="184" r="3.5"></circle></g></svg>
+            <svg class="table" viewBox="0 0 100 120"><path d="M8 52h84v8H8Z" fill="#b98a56" stroke="#8a6036" stroke-width="2"></path><path d="M18 60l-6 58M82 60l6 58M24 92h52" stroke="#8a6036" stroke-width="5" stroke-linecap="round"></path><path d="M36 22h28l-3 30H39Z" fill="#c97a4f" stroke="#8a4a2a" stroke-width="2" stroke-linejoin="round"></path><path d="M50 22c-2-10-10-16-18-16 0 8 8 14 18 16Zm0 0c2-10 10-16 18-16 0 8-8 14-18 16Z" fill="#91be58" stroke="#405c35" stroke-width="1.5"></path></svg>
+          </div>
           <x-if data-if="noWebgl" hidden="">
             <div class="ls-fallback">Leafity appears here in 3D when your browser supports it.</div>
           </x-if>
@@ -473,11 +752,12 @@ html,body{margin:0;background:#f5ebd7}
             <button class="ls-chip" data-on-click="doHop">Hop</button>
             <button class="ls-chip" data-on-click="doCurious">Curious</button>
             <button class="ls-chip" data-on-click="doHappy">Happy</button>
+            <button class="ls-chip" data-on-click="doBow">Bow</button>
           </div>
         </div>
       </div>
     </section>
-    <section id="download" class="ls-sec" data-ls-sec="download" style="background:#fbf3e2">
+    <section id="download" class="ls-sec ls-tint" data-ls-sec="download">
       <div class="ls-contain">
         <div class="ls-dlbg">
         <div class="ls-dl">
@@ -528,22 +808,16 @@ html,body{margin:0;background:#f5ebd7}
       <img class="pm-img" data-b-src="{{image}}" alt="">
     </x-if>
     <x-if data-if="isHome">
-      <div class="pm-pad">
+      <div class="pm-pad" style="gap:4.5cqw">
         <div class="pm-tag">Concept preview</div>
-        <p class="pm-h">My garden</p>
-        <div class="pm-card" style="background:#ecdcbd">
-          <div class="pm-row" style="align-items:flex-end;gap:3cqw">
-            <div class="pm-pot"><div class="pm-leaf"></div><div class="pm-clay"></div></div>
-            <div class="pm-pot"><div class="pm-leaf" style="width:36%"></div><div class="pm-clay"></div></div>
-            <div class="pm-pot"><div class="pm-leaf" style="width:24%"></div><div class="pm-clay"></div></div>
-          </div>
-          <div class="pm-bar" style="background:#b98a56;height:2.6cqw"></div>
+        <p class="pm-h">Your sunlit corner</p>
+        <div class="pm-scene"><div class="pm-win"></div><div class="pm-buddy"></div><div class="pm-say"><b>LEAFITY</b><div class="pm-bar" style="width:92%"></div><div class="pm-bar" style="width:60%"></div></div></div>
+        <div class="pm-card" style="background:#ead9b8;gap:2cqw">
+          <div class="pm-eyebrow">YOUR SHELF</div>
+          <div class="pm-shelf"><div class="pm-potsvg"><svg viewBox="0 0 60 80"><g transform="translate(0 2)"><path d="M30 52V30M30 36c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 36c-6-2-10 2-10 7 6 1 10-2 10-7Z"></path><path d="M46 31c6-3 10 0 11 5-6 2-10-1-11-5Z"></path><path d="M30 26c-3-7-10-9-14-5 3 6 10 8 14 5Z"></path><path d="M30 26c3-7 10-9 14-5-3 6-10 8-14 5Z"></path></g><circle cx="36" cy="44" r="7" fill="#e0603c" stroke="#3e3a2a" stroke-width="1.4"></circle><circle cx="25" cy="42" r="5" fill="#b9c46a" stroke="#3e3a2a" stroke-width="1.4"></circle></g><path d="M14 58h32l-4 20H18Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"></path><path d="M12 54h36v6H12Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="1.4"></path><path d="M17 66l4 4 4-4 4 4 4-4 4 4 4-4" fill="none" stroke="#8a4a2a" stroke-width="1.2"></path><path d="M44 52V38" stroke="#b98a56" stroke-width="1.6"></path><path d="M44 38h9l-2 3 2 3h-9Z" fill="#e0c592" stroke="#b98a56" stroke-width="1"></path></svg></div><div class="pm-potsvg"><svg viewBox="0 0 60 80"><g transform="translate(0 2)"><path d="M30 54V28M30 34c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 34c-7-2-11 3-10 8 7 1 11-3 10-8Z"></path><path d="M46 31c7-3 11 1 11 6-7 2-11-2-11-6Z"></path><path d="M30 26c-3-8-11-10-15-5 3 7 11 9 15 5Z"></path><path d="M30 26c3-8 11-10 15-5-3 7-11 9-15 5Z"></path></g><path d="M38 38c-5 1-7 9-4 14 3 4 8 2 8-4 0-5-1-9-4-10Z" fill="#6b3f86" stroke="#3e3a2a" stroke-width="1.4"></path><circle cx="20" cy="22" r="3" fill="#b48ad0" stroke="#3e3a2a" stroke-width="1"></circle></g><path d="M14 58h32l-4 20H18Z" fill="#c97a4f" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"></path><path d="M12 54h36v6H12Z" fill="#d68b5d" stroke="#3e3a2a" stroke-width="1.4"></path><path d="M17 66l4 4 4-4 4 4 4-4 4 4 4-4" fill="none" stroke="#8a4a2a" stroke-width="1.2"></path><path d="M44 52V38" stroke="#b98a56" stroke-width="1.6"></path><path d="M44 38h9l-2 3 2 3h-9Z" fill="#e0c592" stroke="#b98a56" stroke-width="1"></path></svg></div><div class="pm-new">+<br>New pot</div></div>
+          <div class="pm-plank"></div>
         </div>
-        <div class="pm-card">
-          <div class="pm-t">Next little step</div>
-          <div class="pm-bar g" style="width:92%"></div>
-          <div class="pm-bar g" style="width:64%"></div>
-        </div>
+        <div class="pm-nav"><span class="on">Garden</span><span>Grow</span><span>Leafity</span></div>
       </div>
     </x-if>
     <x-if data-if="isGrow" hidden="">
@@ -551,16 +825,17 @@ html,body{margin:0;background:#f5ebd7}
         <div class="pm-tag">Concept preview</div>
         <p class="pm-h">What can I grow?</p>
         <div class="pm-s">Based on your growing setup</div>
-        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:85%"></div></div></div></div>
-        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:70%"></div></div></div></div>
-        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:78%"></div></div></div></div>
+        <div class="pm-tiles">
+          <div class="pm-tile on"><div class="pm-arch"><svg viewBox="0 0 60 60"><path d="M30 52V30M30 36c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 36c-6-2-10 2-10 7 6 1 10-2 10-7Z"></path><path d="M46 31c6-3 10 0 11 5-6 2-10-1-11-5Z"></path><path d="M30 26c-3-7-10-9-14-5 3 6 10 8 14 5Z"></path><path d="M30 26c3-7 10-9 14-5-3 6-10 8-14 5Z"></path></g><circle cx="36" cy="44" r="7" fill="#e0603c" stroke="#3e3a2a" stroke-width="1.4"></circle><circle cx="25" cy="42" r="5" fill="#b9c46a" stroke="#3e3a2a" stroke-width="1.4"></circle></svg></div><div class="pm-t">Tomato (Kamatis)</div></div>
+          <div class="pm-tile"><div class="pm-arch"><svg viewBox="0 0 60 60"><path d="M30 54V28M30 34c-6-4-12-4-16 0M30 32c6-5 12-5 16-1" fill="none" stroke="#4f6b34" stroke-width="2.2" stroke-linecap="round"></path><g fill="#9cbf6a" stroke="#3e3a2a" stroke-width="1.4" stroke-linejoin="round"><path d="M14 34c-7-2-11 3-10 8 7 1 11-3 10-8Z"></path><path d="M46 31c7-3 11 1 11 6-7 2-11-2-11-6Z"></path><path d="M30 26c-3-8-11-10-15-5 3 7 11 9 15 5Z"></path><path d="M30 26c3-8 11-10 15-5-3 7-11 9-15 5Z"></path></g><path d="M38 38c-5 1-7 9-4 14 3 4 8 2 8-4 0-5-1-9-4-10Z" fill="#6b3f86" stroke="#3e3a2a" stroke-width="1.4"></path><circle cx="20" cy="22" r="3" fill="#b48ad0" stroke="#3e3a2a" stroke-width="1"></circle></svg></div><div class="pm-t">Eggplant (Talong)</div></div>
+        </div>
       </div>
     </x-if>
     <x-if data-if="isGuide" hidden="">
       <div class="pm-pad">
         <div class="pm-tag">Concept preview</div>
         <p class="pm-h">Growing guide</p>
-        <div class="pm-row" style="flex-wrap:wrap;gap:2.4cqw"><span class="pm-chip">Seed</span><span class="pm-chip on">Sprout</span><span class="pm-chip">Growing</span><span class="pm-chip">Harvest</span></div>
+        <div class="pm-row" style="flex-wrap:wrap;gap:2.4cqw"><span class="pm-chip">Seed</span><span class="pm-chip dk">Sprout</span><span class="pm-chip">Growing</span><span class="pm-chip">Harvest</span></div>
         <div class="pm-card"><div class="pm-t">Step 1</div><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:72%"></div></div>
         <div class="pm-card"><div class="pm-t">Step 2</div><div class="pm-bar" style="width:88%"></div><div class="pm-bar" style="width:56%"></div></div>
       </div>
@@ -611,6 +886,7 @@ html,body{margin:0;background:#f5ebd7}
 </div>
 </x-dc></div>
               <div class="ls-spot" data-ls="dl-spot" style="width:clamp(96px,11vw,150px)"></div>
+              <div class="ls-bench" style="left:-4%;right:-10%" aria-hidden="true"></div>
             </div>
             <p class="ls-note" style="text-align:center">Concept preview — not a screenshot of the finished app.</p>
           </div>
@@ -645,6 +921,7 @@ html,body{margin:0;background:#f5ebd7}
     </section>
   </main>
   <footer class="ls-foot" data-ls-sec="footer">
+    <svg class="ls-footvine" viewBox="0 0 1200 70" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 10C200 40 400 0 600 22S1000 44 1200 8" fill="none" stroke="#7d8f4e" stroke-width="2.5"></path><g fill="#91be58" stroke="#2f4a2a" stroke-width="1.2" stroke-linejoin="round"><path class="ls-sway" d="M90 26c-6 10-2 22 8 26 4-10 0-22-8-26Z"></path><path class="ls-sway b" d="M230 22c4 12 14 16 24 12-4-12-14-16-24-12Z"></path><path class="ls-sway c" d="M380 14c-6 10-2 22 8 26 4-10 0-22-8-26Z"></path><path class="ls-sway" d="M520 20c4 12 14 16 24 12-4-12-14-16-24-12Z"></path><path class="ls-sway b" d="M690 26c-6 10-2 22 8 26 4-10 0-22-8-26Z"></path><path class="ls-sway c" d="M840 34c4 12 14 16 24 12-4-12-14-16-24-12Z"></path><path class="ls-sway" d="M990 30c-6 10-2 22 8 26 4-10 0-22-8-26Z"></path><path class="ls-sway b" d="M1130 14c4 12 14 16 24 12-4-12-14-16-24-12Z"></path></g><g fill="#f2c14e"><circle cx="300" cy="24" r="4"></circle><circle cx="760" cy="34" r="4"></circle><circle cx="1060" cy="22" r="4"></circle></g></svg>
     <div class="in">
       <div style="display:flex;flex-direction:column;gap:10px">
         <span class="ls-brand" style="--h:46px"><img src="/brand/Group%202.svg" alt="LeafSpectra" width="487" height="171"></span>

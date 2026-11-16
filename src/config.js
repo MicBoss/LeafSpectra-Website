@@ -28,4 +28,6 @@ export const LEAFITY = {
   peekSmallPercent: 45,
   peekMediumPercent: 35,
   peekGiantPercent: 20,
+  // in the hero, how long without any pointer, key or scroll activity before Leafity gets sleepy
+  sleepyAfterSeconds: 40,
 };

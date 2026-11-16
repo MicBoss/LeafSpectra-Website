@@ -37,7 +37,7 @@ const c = (name) => ({ type: 'clip', name, label: CLIPS[name].label, fx: false }
 const x = (name, label) => ({ type: 'clip', name, label, fx: true });
 const e = (id, label) => ({ type: 'edge', id, label });
 export const LIBRARY = [
-  { title: 'Basic idle', items: ['idle', 'lookAround', 'curiousTilt', 'blink', 'doze', 'wakeUp'].map(c) },
+  { title: 'Basic idle', items: ['idle', 'lookAround', 'curiousTilt', 'blink', 'sleepy', 'doze', 'wakeUp', 'bow'].map(c) },
   { title: 'Reactions and emotions', items: ['happyHop', 'wave', 'giggle', 'dance', 'celebrate', 'surprised', 'nod', 'think'].map(c) },
   { title: 'Website edge behaviors', items: [e('peek:left', 'Peek Left'), e('peek:right', 'Peek Right'), e('peek:top', 'Peek Top'), e('peek:bottom', 'Peek Bottom'), e('corner', 'Corner Peek'), e('leanIn', 'Side Lean-In'), e('popIn', 'Pop-In From Below'), e('dropIn', 'Drop-In From Top'), e('hideReappear', 'Hide and Reappear'), e('windowPeek', 'Window Peek'), e('edgeHang', 'Edge Hang'), e('shelfSit', 'Shelf Sit'), e('assistant', 'Slide-In Assistant')] },
   { title: 'Website movement', items: [c('walk'), c('run'), c('climb'), e('sideCrawl', 'Side Crawl'), c('slide'), c('jump'), c('hang')] },
