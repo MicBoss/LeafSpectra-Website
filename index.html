@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeafSpectra</title>
+<meta name="description" content="LeafSpectra is a beginner-friendly Android app for growing vegetables at home: vegetable suggestions, step-by-step care guidance, care records, and guided leaf observations, with Leafity, a friendly plant-care companion.">
+<meta name="theme-color" content="#f5ebd7">
+<link rel="icon" href="/brand/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LeafSpectra">
+<meta property="og:title" content="LeafSpectra">
+<meta property="og:description" content="LeafSpectra is a beginner-friendly Android app for growing vegetables at home: vegetable suggestions, step-by-step care guidance, care records, and guided leaf observations, with Leafity, a friendly plant-care companion.">
+<meta property="og:image" content="https://leafspectra.vercel.app/brand/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LeafSpectra logo">
+<meta property="og:url" content="https://leafspectra.vercel.app/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LeafSpectra">
+<meta name="twitter:description" content="LeafSpectra is a beginner-friendly Android app for growing vegetables at home: vegetable suggestions, step-by-step care guidance, care records, and guided leaf observations, with Leafity, a friendly plant-care companion.">
+<meta name="twitter:image" content="https://leafspectra.vercel.app/brand/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* hydration wrappers left by the prerender: they never affect layout */
+x-t,x-if,x-dc{display:contents}
+x-if[hidden]{display:none}
+</style>
+<style>
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+html,body{margin:0;background:#f5ebd7}
+.ls{--bg:#f5ebd7;--surface:#fffbf2;--soft:#e1efcb;--leaf:#91be58;--deep:#405c35;--earth:#704a2d;--ink:#30291e;--muted:#5f5140;--line:#e3d3b3;
+  font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:17px;line-height:1.6;overflow-x:clip;position:relative}
+.ls *{box-sizing:border-box}
+.ls h1,.ls h2,.ls h3,.ls p{margin:0}
+.ls h1,.ls h2{font-family:'Fraunces','Lora',Georgia,serif;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.ls h1{font-size:clamp(38px,5.4vw,66px);line-height:1.04}
+.ls h2{font-size:clamp(30px,3.6vw,44px);line-height:1.1}
+.ls h3{font-size:19px;font-weight:800;line-height:1.25}
+.ls a{color:var(--deep)}
+.ls :focus-visible{outline:3px solid #2f6fb5;outline-offset:3px;border-radius:6px}
+/* Leafity is drawn on one fixed canvas between the section backgrounds and the content */
+.ls-canvas{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.ls-wrap{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:0 24px}
+.ls-sec{padding:92px 0;position:relative}
+.ls-eyebrow{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--deep)}
+.ls-lead{font-size:19px;color:var(--muted);max-width:60ch}
+.ls-head{display:flex;flex-direction:column;gap:12px;margin-bottom:40px}
+.ls-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:10px}
+.ls-ico{width:48px;height:48px;border-radius:16px;background:var(--soft);display:grid;place-items:center;flex:none}
+.ls-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border-radius:99px;border:2px solid var(--deep);font:800 16px 'Nunito',system-ui,sans-serif;text-decoration:none;cursor:pointer;background:var(--deep);color:#fffbf2;transition:translate .15s}
+.ls-btn:hover{translate:0 -2px}
+.ls-btn.ghost{background:transparent;color:var(--deep)}
+.ls a.ls-btn{color:#fffbf2}
+.ls a.ls-btn.ghost{color:var(--deep)}
+.ls-btn[aria-disabled="true"]{background:#e9dcc2;border-color:#cdbb97;color:#5f5140;cursor:not-allowed;translate:none}
+/* nav */
+.ls-nav{position:sticky;top:0;z-index:20;background:#f5ebd7;border-bottom:1px solid var(--line)}
+.ls-nav .in{max-width:1120px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ls-mark{display:flex;align-items:center;text-decoration:none;margin-right:auto;border-radius:10px}
+/* Official LeafSpectra lockups (brand/Group 1.svg on light, brand/Group 2.svg on dark), shown unaltered.
+   The files carry empty space around the artwork (artwork spans x 29–484, y 39–133 of 487 × 171),
+   so the box shows just that area: --h is the height of the artwork, the image keeps its own ratio. */
+.ls-brand{--h:40px;display:block;position:relative;flex:none;height:var(--h);width:calc(var(--h) * 455 / 94);overflow:hidden}
+.ls-brand img{position:absolute;display:block;max-width:none;height:calc(var(--h) * 171 / 94);width:auto;left:calc(var(--h) * -29 / 94);top:calc(var(--h) * -39 / 94)}
+.ls-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ls-links a{text-decoration:none;font-weight:800;font-size:15px;color:var(--earth);padding:10px 12px;border-radius:99px}
+.ls-links a:hover{background:var(--soft)}
+.ls-links a.cta{background:var(--deep);color:#fffbf2;padding:10px 18px;margin-left:6px}
+.ls-menu{display:none;min-height:44px;padding:0 16px;border-radius:99px;border:2px solid var(--earth);background:transparent;color:var(--earth);font:800 15px 'Nunito',system-ui,sans-serif;cursor:pointer}
+/* hero */
+.ls-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:32px;align-items:center}
+.ls-herotext{display:flex;flex-direction:column;gap:20px;align-items:flex-start}
+.ls-stage{position:relative;min-height:470px}
+.ls-fallback{position:absolute;inset:12% 10%;border-radius:32px;background:var(--soft);display:grid;place-items:center;text-align:center;padding:20px;font-weight:700;color:var(--deep)}
+.ls-deco{position:absolute;z-index:0;pointer-events:none}
+.ls-scroll{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:var(--earth);text-decoration:none;margin-top:8px}
+.ls-scroll span{display:inline-block;animation:ls-nudge 2.2s ease-in-out infinite}
+@keyframes ls-nudge{0%,100%{translate:0 0}50%{translate:0 5px}}
+/* grids */
+.ls-g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+/* the vine hangs in its own band; the space below it, down to the cards, is where Leafity stands */
+.ls-garland{height:206px;display:flex;justify-content:center;align-items:flex-start;margin-top:-24px}
+.ls-garland svg{display:block;width:min(100%,600px);height:auto;overflow:visible}
+.ls-feat{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:36px;align-items:center}
+.ls-featlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ls-fbtn{text-align:left;font:inherit;color:inherit;cursor:pointer;background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:6px}
+.ls-fbtn[aria-pressed="true"]{border-color:var(--deep);background:#f3f8e6}
+.ls-fbtn .n{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:14px;color:var(--deep)}
+.ls-fdesc{font-size:15px;color:var(--muted);line-height:1.5}
+.ls-fnow{display:none}
+.ls-duo{display:flex;align-items:flex-end;justify-content:center;gap:8px}
+.ls-spot{flex:none;width:clamp(110px,15vw,180px);height:clamp(130px,17vw,200px)}
+.ls-phone{flex:none;width:clamp(180px,22vw,240px)}
+.ls-note{font-size:14px;font-weight:700;color:var(--muted)}
+.ls-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.ls-step .num{width:38px;height:38px;border-radius:50%;background:var(--deep);color:#fffbf2;display:grid;place-items:center;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px}
+.ls-path{height:190px;position:relative;margin-top:6px}
+.ls-path::after{content:"";position:absolute;left:0;right:0;bottom:14px;border-bottom:3px dashed #c9b48a}
+.ls-meet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:center}
+.ls-bubble{font-family:'Baloo 2',sans-serif;font-weight:600;font-size:18px;line-height:1.3;background:var(--surface);border:1px solid var(--line);border-radius:22px 22px 22px 6px;padding:12px 18px;width:fit-content;max-width:100%}
+.ls-chip{font:800 15px 'Nunito',system-ui,sans-serif;min-height:44px;padding:0 18px;border-radius:99px;border:2px solid var(--deep);background:var(--surface);color:var(--deep);cursor:pointer}
+.ls-chip:hover{background:var(--soft)}
+/* the download card's background is painted below the canvas so Leafity can stand inside the card */
+.ls-contain{max-width:1120px;margin:0 auto;padding:0 24px}
+.ls-dlbg{background:var(--surface);border:1px solid var(--line);border-radius:32px}
+.ls-dl{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:32px;align-items:center;padding:36px}
+.ls-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ls-fact{background:var(--bg);border-radius:16px;padding:12px 14px}
+.ls-fact .k{font-size:13px;font-weight:800;color:var(--muted)}
+.ls-fact .v{font-weight:800}
+.ls-faqgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:28px;align-items:start}
+.ls-faqstage{position:sticky;top:96px;height:min(560px,70vh)}
+.ls-faq{display:flex;flex-direction:column;gap:12px}
+.ls-faq details{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:0 22px}
+.ls-faq summary{cursor:pointer;font-weight:800;font-size:18px;padding:18px 0;list-style-position:outside}
+.ls-faq details p{padding:0 0 20px;color:var(--muted)}
+.ls-foot{background:var(--deep);color:#f5ebd7;position:relative}
+.ls-foot a{color:#f5ebd7}
+.ls-foot .in{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:44px 24px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:28px}
+.ls-perch{height:120px;width:150px;margin-left:auto}
+@media (max-width:980px){
+  .ls-g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ls-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ls-feat,.ls-meet,.ls-dl,.ls-faqgrid{grid-template-columns:minmax(0,1fr)}
+  .ls-faqstage{position:relative;top:auto;order:-1;height:230px}
+  .ls-facts{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:720px){
+  .ls{font-size:16px}
+  .ls-sec{padding:64px 0}
+  .ls-wrap,.ls-contain{padding:0 18px}
+  .ls-menu{display:inline-flex;align-items:center}
+  .ls-nav .ls-brand{--h:32px}
+  .ls-links{display:none;width:100%;flex-direction:column;align-items:stretch;padding-bottom:8px}
+  .ls-links.open{display:flex}
+  .ls-links a{padding:12px 14px}
+  .ls-links a.cta{margin-left:0;text-align:center}
+  /* phones: Leafity sits between the headline and the supporting text */
+  .ls-hero{display:flex;flex-direction:column;gap:16px}
+  .ls-herotext{display:contents}
+  .ls-hero .ls-stage{order:1;width:100%}
+  .ls-herotext > *{order:2}
+  .ls-herotext > .ls-eyebrow,.ls-herotext > h1{order:0}
+  .ls-stage{min-height:240px}
+  .ls-garland{height:178px}
+  .ls-g4,.ls-steps{grid-template-columns:minmax(0,1fr)}
+  .ls-featlist{gap:10px}
+  .ls-fbtn{padding:12px 14px;border-radius:18px}
+  .ls-fbtn .ls-fdesc{display:none}
+  .ls-fnow{display:block}
+  .ls-path{height:132px}
+  .ls-dl{padding:24px 20px}
+  .ls-facts{grid-template-columns:minmax(0,1fr)}
+  .ls-foot .in{grid-template-columns:minmax(0,1fr)}
+  .ls-btn{width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .ls-scroll span{animation:none}
+  .ls-btn{transition:none}
+}
+</style>
+<style>
+/* PhoneMockup — an Android phone frame with a swappable screen.
+   Give it an image (a real screenshot, 9:19.5) and it shows that; otherwise it draws one of
+   the labelled concept screens below. Size it by sizing its container: it fills the width. */
+.pm{position:relative;width:100%;aspect-ratio:9/19;font-family:'Nunito',system-ui,sans-serif;color:#30291e}
+.pm-float{animation:pm-float 6s ease-in-out infinite}
+@keyframes pm-float{0%,100%{translate:0 0}50%{translate:0 -8px}}
+@media (prefers-reduced-motion:reduce){.pm-float{animation:none}}
+.pm-body{position:absolute;inset:0;border-radius:13.5% / 6.4%;background:#2e261c;box-shadow:0 18px 30px -18px rgba(48,41,30,.55),inset 0 0 0 2px #4a3f30}
+.pm-btn{position:absolute;right:-1.2%;width:1.6%;border-radius:2px;background:#2e261c}
+.pm-screen{position:absolute;inset:2.6% 4.4%;border-radius:10% / 4.6%;overflow:hidden;background:#f5ebd7;display:flex;flex-direction:column}
+.pm-cam{position:absolute;top:4%;left:50%;width:5.5%;aspect-ratio:1;border-radius:50%;background:#2e261c;transform:translateX(-50%);z-index:2}
+.pm-img{width:100%;height:100%;object-fit:cover;display:block}
+.pm-pad{flex:1;display:flex;flex-direction:column;gap:7%;padding:17% 8% 6%;min-height:0;container-type:inline-size}
+.pm-tag{align-self:flex-start;font-size:6.2cqw;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#405c35;background:#e1efcb;border-radius:99px;padding:1.5cqw 4cqw}
+.pm-h{font-family:'Fraunces','Lora',Georgia,serif;font-weight:700;font-size:10.5cqw;line-height:1.1;margin:0}
+.pm-card{background:#fffbf2;border-radius:6cqw;padding:5cqw;display:flex;flex-direction:column;gap:3.2cqw}
+.pm-row{display:flex;align-items:center;gap:4cqw}
+.pm-dot{flex:none;width:13cqw;aspect-ratio:1;border-radius:50%;background:#e1efcb}
+.pm-bar{height:3.4cqw;border-radius:99px;background:#e6d8bd}
+.pm-bar.g{background:#c5dea0}
+.pm-t{font-size:6.4cqw;font-weight:800;line-height:1.2}
+.pm-s{font-size:5.6cqw;font-weight:700;line-height:1.3;color:#6a5a45}
+.pm-chip{font-size:5.4cqw;font-weight:800;border-radius:99px;padding:1.4cqw 3.6cqw;background:#fffbf2;color:#704a2d}
+.pm-chip.on{background:#91be58;color:#26361d}
+.pm-pot{flex:1;display:flex;flex-direction:column;align-items:center;gap:0}
+.pm-leaf{width:44%;aspect-ratio:1.6;border-radius:60% 60% 10% 60%;background:#91be58}
+.pm-clay{width:70%;aspect-ratio:1.15;background:#c98a5e;border-radius:10% 10% 28% 28%}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="ls" data-ref="rootRef">
+  <canvas class="ls-canvas" data-ref="canvasRef" aria-hidden="true"></canvas>
+  <header class="ls-nav">
+    <nav class="in" aria-label="Main">
+      <a class="ls-mark" href="#home" aria-label="LeafSpectra home">
+        <span class="ls-brand"><img src="/brand/Group%201.svg" alt="LeafSpectra" width="487" height="171"></span>
+      </a>
+      <button class="ls-menu" data-on-click="toggleMenu" data-b-aria-expanded="{{menuOpen}}" aria-controls="ls-links"><x-t data-t="{{menuLabel}}">Menu</x-t></button>
+      <div id="ls-links" class="ls-links " data-b-class="ls-links {{menuCls}}">
+        <a href="#home" data-on-click="closeMenu">Home</a>
+        <a href="#features" data-on-click="closeMenu">Features</a>
+        <a href="#how" data-on-click="closeMenu">How It Works</a>
+        <a href="#leafity" data-on-click="closeMenu">Meet Leafity</a>
+        <a href="#faq" data-on-click="closeMenu">FAQ</a>
+        <a class="cta" href="#download" data-on-click="closeMenu">Download App</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="ls-sec" data-ls-sec="home" style="padding-top:56px">
+      <svg class="ls-deco" style="right:-40px;top:20px" width="320" height="320" viewBox="0 0 320 320" aria-hidden="true"><circle cx="190" cy="170" r="150" fill="#ecdfc4"></circle><path d="M40 300 110 250 60 230Z" fill="#e1efcb"></path><path d="M270 40 300 90 250 80Z" fill="#d5e8b6"></path></svg>
+      <svg class="ls-deco" style="left:-70px;bottom:-20px" width="180" height="150" viewBox="0 0 180 150" aria-hidden="true"><path d="M10 140C40 90 90 60 170 50" stroke="#b9a57c" stroke-width="3" fill="none" stroke-linecap="round"></path><path d="M52 96c-2-18 8-30 26-34 2 18-8 30-26 34Z" fill="#c5dea0"></path><path d="M100 70c-6-16 0-30 16-38 6 16 0 30-16 38Z" fill="#91be58"></path><path d="M140 56c-2-14 6-24 20-28 2 14-6 24-20 28Z" fill="#c5dea0"></path></svg>
+      <div class="ls-wrap ls-hero">
+        <div class="ls-herotext">
+          <div class="ls-eyebrow">Plant-care assistant for beginner home growers</div>
+          <h1>Grow with confidence, one leaf at a time.</h1>
+          <p class="ls-lead">Meet LeafSpectra, your beginner-friendly companion for choosing vegetables, learning plant care, and understanding visible changes as your garden grows.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;width:100%">
+            <x-if data-if="hasApk">
+              <a class="ls-btn" href="apk.txt" data-b-href="{{apkUrl}}" download="apk.txt" data-b-download="{{apkName}}">Download for Android</a>
+            </x-if>
+            <x-if data-if="noApk" hidden="">
+              <a class="ls-btn" href="#download">Download for Android</a>
+            </x-if>
+            <a class="ls-btn ghost" href="#features">Explore Features</a>
+            <x-if data-if="apkTest">
+              <p class="ls-note" style="width:100%">Test download only — Android APK coming soon.</p>
+            </x-if>
+          </div>
+          <a class="ls-scroll" href="#about"><span aria-hidden="true">↓</span> Scroll to see what LeafSpectra is</a>
+        </div>
+        <div class="ls-stage" data-ls="hero-stage">
+          <x-if data-if="noWebgl" hidden="">
+            <div class="ls-fallback">Leafity, the LeafSpectra mascot, appears here in 3D. Your browser could not start the 3D view.</div>
+          </x-if>
+        </div>
+      </div>
+    </section>
+    <section id="about" class="ls-sec" data-ls-sec="about" style="background:#fbf3e2">
+      <div class="ls-wrap">
+        <div class="ls-head" data-ls="about-head">
+          <div class="ls-eyebrow">What is LeafSpectra?</div>
+          <h2>A gentle start for growing vegetables at home.</h2>
+          <p class="ls-lead">LeafSpectra is an Android app designed for people who are new to growing vegetables. It brings your growing setup, simple guidance and your plants' history into one place, with Leafity to keep you company.</p>
+        </div>
+        <div class="ls-garland" aria-hidden="true">
+          <svg data-ls="about-vine" viewBox="-14 -8 628 70" width="600" height="67"><g fill="none" stroke="#8a7a52" stroke-linecap="round"><path d="M20 10C160 46 440 46 580 10" stroke-width="2.5"></path><path d="M20 10c-8 1-12 8-8 13s11 2 9-4" stroke-width="2"></path><path d="M580 10c8 1 12 8 8 13s-11 2-9-4" stroke-width="2"></path></g><g fill="#b98a56" stroke="#704a2d" stroke-width="1.6"><circle cx="20" cy="8" r="5"></circle><circle cx="580" cy="8" r="5"></circle></g><g fill="#a9cf78" stroke="#405c35" stroke-width="1.6" stroke-linejoin="round"><path d="M72 21c-4 10 0 18 10 22 4-10 0-18-10-22Z"></path><path d="M104 26c6 8 14 10 23 6-6-9-14-11-23-6Z"></path><path d="M180 36c-3 10 2 17 12 20 3-10-2-17-12-20Z"></path><path d="M216 38c7 7 15 8 23 3-7-8-15-9-23-3Z"></path><path d="M292 40c-2 9 3 15 11 16 2-9-2-15-11-16Z"></path><path d="M368 38c-7 7-15 8-23 3 7-8 15-9 23-3Z"></path><path d="M404 36c3 10-2 17-12 20-3-10 2-17 12-20Z"></path><path d="M480 26c-6 8-14 10-23 6 6-9 14-11 23-6Z"></path><path d="M512 21c4 10 0 18-10 22-4-10 0-18 10-22Z"></path></g></svg>
+        </div>
+        <div class="ls-g4">
+          <div class="ls-card" data-ls="about-card">
+            <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 12 13 4l9 8v10H4Z" fill="#b6d886" stroke="#405c35" stroke-width="2" stroke-linejoin="round"></path><circle cx="20" cy="5" r="3" fill="#f2c14e"></circle></svg></div>
+            <h3>Understand your growing space</h3>
+            <p class="ls-fdesc">Describe where you live and how you grow at home, so guidance can fit your conditions.</p>
+          </div>
+          <div class="ls-card" data-ls="about-card">
+            <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 23V12" stroke="#405c35" stroke-width="2.4" stroke-linecap="round"></path><path d="M13 13C7 13 4 9 4 4c6 0 9 3 9 9ZM13 11c0-5 3-8 9-8 0 6-3 9-9 8Z" fill="#91be58" stroke="#405c35" stroke-width="2" stroke-linejoin="round"></path></svg></div>
+            <h3>Learn which vegetables may suit you</h3>
+            <p class="ls-fdesc">See vegetable suggestions matched to your location and home-growing setup.</p>
+          </div>
+          <div class="ls-card" data-ls="about-card">
+            <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="5" y="3" width="16" height="20" rx="3" fill="#fffbf2" stroke="#405c35" stroke-width="2"></rect><path d="M9 9h8M9 13h8M9 17h5" stroke="#91be58" stroke-width="2.2" stroke-linecap="round"></path></svg></div>
+            <h3>Follow planting and care guidance</h3>
+            <p class="ls-fdesc">Beginner-friendly instructions and care tips for each growth stage, with weather-aware advice and reminders.</p>
+          </div>
+          <div class="ls-card" data-ls="about-card">
+            <div class="ls-ico"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 21h18" stroke="#405c35" stroke-width="2.2" stroke-linecap="round"></path><path d="M6 17l5-5 4 3 6-8" fill="none" stroke="#405c35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="21" cy="7" r="2.6" fill="#91be58"></circle></svg></div>
+            <h3>Keep track of plant progress</h3>
+            <p class="ls-fdesc">Each plant keeps its own profile, care records and history, so you can look back on how it has grown.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="features" class="ls-sec" data-ls-sec="features">
+      <div class="ls-wrap">
+        <div class="ls-head">
+          <div class="ls-eyebrow">Features</div>
+          <h2>What the app is being built to do.</h2>
+          <p class="ls-lead">These are the planned features of the LeafSpectra Android app. Pick one to see a concept preview.</p>
+        </div>
+        <div class="ls-feat">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="ls-featlist">
+              
+                <button class="ls-fbtn" data-on-click="feats.0.pick" aria-pressed="true" data-b-aria-pressed="{{feats.0.on}}" data-scope="f=feats.0">
+                  <span class="n"><x-t data-t="{{feats.0.num}}">Feature 1</x-t></span>
+                  <h3><x-t data-t="{{feats.0.title}}">What Can I Grow?</x-t></h3>
+                  <span class="ls-fdesc"><x-t data-t="{{feats.0.desc}}">Suggestions for vegetables that may suit your location and home-growing setup.</x-t></span>
+                </button>
+              
+                <button class="ls-fbtn" data-on-click="feats.1.pick" data-b-aria-pressed="{{feats.1.on}}" data-scope="f=feats.1">
+                  <span class="n"><x-t data-t="{{feats.1.num}}">Feature 2</x-t></span>
+                  <h3><x-t data-t="{{feats.1.title}}">Growing and Learning Guides</x-t></h3>
+                  <span class="ls-fdesc"><x-t data-t="{{feats.1.desc}}">Beginner-friendly instructions, with care guidance for each growth stage.</x-t></span>
+                </button>
+              
+                <button class="ls-fbtn" data-on-click="feats.2.pick" data-b-aria-pressed="{{feats.2.on}}" data-scope="f=feats.2">
+                  <span class="n"><x-t data-t="{{feats.2.num}}">Feature 3</x-t></span>
+                  <h3><x-t data-t="{{feats.2.title}}">Care Records and Reminders</x-t></h3>
+                  <span class="ls-fdesc"><x-t data-t="{{feats.2.desc}}">Log the care you give, keep each plant’s history, and get weather-aware reminders.</x-t></span>
+                </button>
+              
+                <button class="ls-fbtn" data-on-click="feats.3.pick" data-b-aria-pressed="{{feats.3.on}}" data-scope="f=feats.3">
+                  <span class="n"><x-t data-t="{{feats.3.num}}">Feature 4</x-t></span>
+                  <h3><x-t data-t="{{feats.3.title}}">Guided Leaf Observations</x-t></h3>
+                  <span class="ls-fdesc"><x-t data-t="{{feats.3.desc}}">Step-by-step help for photographing a leaf so it can be compared over time.</x-t></span>
+                </button>
+              
+                <button class="ls-fbtn" data-on-click="feats.4.pick" data-b-aria-pressed="{{feats.4.on}}" data-scope="f=feats.4">
+                  <span class="n"><x-t data-t="{{feats.4.num}}">Feature 5</x-t></span>
+                  <h3><x-t data-t="{{feats.4.title}}">Visual Change Monitoring</x-t></h3>
+                  <span class="ls-fdesc"><x-t data-t="{{feats.4.desc}}">Leaf photos are analysed online to describe visible changes — never a confirmed diagnosis.</x-t></span>
+                </button>
+              
+                <button class="ls-fbtn" data-on-click="feats.5.pick" data-b-aria-pressed="{{feats.5.on}}" data-scope="f=feats.5">
+                  <span class="n"><x-t data-t="{{feats.5.num}}">Feature 6</x-t></span>
+                  <h3><x-t data-t="{{feats.5.title}}">Ask Leafity</x-t></h3>
+                  <span class="ls-fdesc"><x-t data-t="{{feats.5.desc}}">A bilingual English and Filipino companion that explains guidance in simple words.</x-t></span>
+                </button>
+              
+            </div>
+            <p class="ls-fdesc ls-fnow" aria-live="polite"><x-t data-t="{{featDesc}}">Suggestions for vegetables that may suit your location and home-growing setup.</x-t></p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div class="ls-duo">
+              <div class="ls-spot" data-ls="feat-spot"></div>
+              <div class="ls-phone"><x-dc data-dc="PhoneMockup" data-props-tmpl="{&quot;screen&quot;:&quot;{{featScreen}}&quot;,&quot;tilt&quot;:&quot;{{two}}&quot;}">
+
+<div class="pm pm-float" data-b-class="pm {{floatCls}}" style="rotate:2deg" data-b-style="rotate:{{tiltDeg}}" role="img" aria-label="Concept preview (not a real screenshot) of vegetable suggestions" data-b-aria-label="{{ariaLabel}}">
+  <div class="pm-body"></div>
+  <div class="pm-btn" style="top:22%;height:9%"></div>
+  <div class="pm-btn" style="top:34%;height:5%"></div>
+  <div class="pm-screen">
+    <div class="pm-cam"></div>
+    <x-if data-if="hasImage" hidden="">
+      <img class="pm-img" data-b-src="{{image}}" alt="">
+    </x-if>
+    <x-if data-if="isHome" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">My garden</p>
+        <div class="pm-card" style="background:#ecdcbd">
+          <div class="pm-row" style="align-items:flex-end;gap:3cqw">
+            <div class="pm-pot"><div class="pm-leaf"></div><div class="pm-clay"></div></div>
+            <div class="pm-pot"><div class="pm-leaf" style="width:36%"></div><div class="pm-clay"></div></div>
+            <div class="pm-pot"><div class="pm-leaf" style="width:24%"></div><div class="pm-clay"></div></div>
+          </div>
+          <div class="pm-bar" style="background:#b98a56;height:2.6cqw"></div>
+        </div>
+        <div class="pm-card">
+          <div class="pm-t">Next little step</div>
+          <div class="pm-bar g" style="width:92%"></div>
+          <div class="pm-bar g" style="width:64%"></div>
+        </div>
+      </div>
+    </x-if>
+    <x-if data-if="isGrow">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">What can I grow?</p>
+        <div class="pm-s">Based on your growing setup</div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:85%"></div></div></div></div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:70%"></div></div></div></div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:78%"></div></div></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isGuide" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Growing guide</p>
+        <div class="pm-row" style="flex-wrap:wrap;gap:2.4cqw"><span class="pm-chip">Seed</span><span class="pm-chip on">Sprout</span><span class="pm-chip">Growing</span><span class="pm-chip">Harvest</span></div>
+        <div class="pm-card"><div class="pm-t">Step 1</div><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:72%"></div></div>
+        <div class="pm-card"><div class="pm-t">Step 2</div><div class="pm-bar" style="width:88%"></div><div class="pm-bar" style="width:56%"></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isCare" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Care records</p>
+        <div class="pm-card">
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw;background:#91be58"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw;background:#91be58"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+        </div>
+        <div class="pm-card" style="background:#e1efcb"><div class="pm-t">Reminder</div><div class="pm-bar g" style="width:80%"></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isObserve" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Guided observation</p>
+        <div style="flex:1;min-height:0;border-radius:6cqw;background:#3d4a34;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="width:62%;aspect-ratio:.8;border:1.2cqw dashed #e1efcb;border-radius:60% 60% 60% 60% / 70% 70% 40% 40%"></div>
+          <div style="position:absolute;left:0;right:0;bottom:6%;text-align:center;font-size:5.6cqw;font-weight:800;color:#fffbf2">Fit one leaf inside the guide</div>
+        </div>
+        <div style="align-self:center;width:17cqw;aspect-ratio:1;border-radius:50%;background:#fffbf2;border:1.6cqw solid #91be58"></div>
+      </div>
+    </x-if>
+    <x-if data-if="isMonitor" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Changes over time</p>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot" style="border-radius:4cqw"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Observation</div><div class="pm-bar" style="width:80%"></div></div></div></div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot" style="border-radius:4cqw"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Observation</div><div class="pm-bar" style="width:66%"></div></div></div></div>
+        <div class="pm-s" style="text-align:center">Visible changes only — not a diagnosis</div>
+      </div>
+    </x-if>
+    <x-if data-if="isLeafity" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Ask Leafity</p>
+        <div class="pm-row" style="align-items:flex-start"><div class="pm-dot" style="width:10cqw;background:#91be58"></div><div class="pm-card" style="flex:1;border-radius:2cqw 6cqw 6cqw 6cqw"><div class="pm-bar" style="width:90%"></div><div class="pm-bar" style="width:60%"></div></div></div>
+        <div class="pm-card" style="align-self:flex-end;width:62%;background:#e1efcb;border-radius:6cqw 2cqw 6cqw 6cqw"><div class="pm-bar g" style="width:86%"></div></div>
+        <div class="pm-row" style="align-items:flex-start"><div class="pm-dot" style="width:10cqw;background:#91be58"></div><div class="pm-card" style="flex:1;border-radius:2cqw 6cqw 6cqw 6cqw"><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:78%"></div><div class="pm-bar" style="width:40%"></div></div></div>
+        <div style="margin-top:auto" class="pm-card"><div class="pm-s">English · Filipino</div></div>
+      </div>
+    </x-if>
+  </div>
+</div>
+</x-dc></div>
+            </div>
+            <p class="ls-note" style="text-align:center">Concept preview — not a screenshot of the finished app.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="how" class="ls-sec" data-ls-sec="how" style="background:#fbf3e2">
+      <div class="ls-wrap">
+        <div class="ls-head">
+          <div class="ls-eyebrow">How it works</div>
+          <h2>From first setup to watching your plants change.</h2>
+          <p class="ls-lead">This is the intended experience inside the Android app.</p>
+        </div>
+        <div class="ls-steps">
+          <div class="ls-card ls-step" data-ls="how-step"><div class="num">1</div><h3>Set up your growing profile</h3><p class="ls-fdesc">Create an account and tell the app about your location and home-growing setup.</p></div>
+          <div class="ls-card ls-step" data-ls="how-step"><div class="num">2</div><h3>Explore suitable vegetables</h3><p class="ls-fdesc">Browse vegetables suggested for your conditions and pick what to grow.</p></div>
+          <div class="ls-card ls-step" data-ls="how-step"><div class="num">3</div><h3>Learn and record plant care</h3><p class="ls-fdesc">Follow stage-by-stage guidance, get reminders, and log the care you give.</p></div>
+          <div class="ls-card ls-step" data-ls="how-step"><div class="num">4</div><h3>Complete guided observations</h3><p class="ls-fdesc">When your plant is eligible, the app guides you through taking suitable leaf photos.</p></div>
+          <div class="ls-card ls-step" data-ls="how-step"><div class="num">5</div><h3>Review visible changes</h3><p class="ls-fdesc">See what has visibly changed over time, with Leafity's cautious explanations.</p></div>
+        </div>
+        <div class="ls-path" data-ls="how-path" aria-hidden="true"></div>
+        <p class="ls-note" style="max-width:70ch">Visual monitoring needs suitable leaf images and is limited to the supported vegetables and observation steps. Its results describe visible changes — they are not confirmed diagnoses.</p>
+      </div>
+    </section>
+    <section id="leafity" class="ls-sec" data-ls-sec="leafity">
+      <svg class="ls-deco" style="left:4%;top:60px" width="140" height="140" viewBox="0 0 140 140" aria-hidden="true"><path d="M20 120 70 20l50 100Z" fill="#ecdfc4"></path><path d="M70 20 95 70 45 70Z" fill="#e1efcb"></path></svg>
+      <div class="ls-wrap ls-meet">
+        <div class="ls-stage" data-ls="meet-stage">
+          <x-if data-if="noWebgl" hidden="">
+            <div class="ls-fallback">Leafity appears here in 3D when your browser supports it.</div>
+          </x-if>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div class="ls-eyebrow">Meet Leafity</div>
+          <h2>Say hello to Leafity!</h2>
+          <p class="ls-lead">Leafity is LeafSpectra's friendly gardening companion. Inside the app, Leafity is designed to chat in English and Filipino, helping you make sense of planting information and care guidance in plain, encouraging words.</p>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="ls-bubble">“Need a hand with your plants?”</div>
+            <div class="ls-bubble" style="margin-left:24px">“Let's find your next little step!”</div>
+            <div class="ls-bubble">“Small steps make a growing garden!”</div>
+          </div>
+          <p class="ls-note">Example phrases only. Chatting with Leafity happens in the Android app, not on this website.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px" role="group" aria-label="Play with Leafity">
+            <button class="ls-chip" data-on-click="doWave">Wave</button>
+            <button class="ls-chip" data-on-click="doHop">Hop</button>
+            <button class="ls-chip" data-on-click="doCurious">Curious</button>
+            <button class="ls-chip" data-on-click="doHappy">Happy</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="download" class="ls-sec" data-ls-sec="download" style="background:#fbf3e2">
+      <div class="ls-contain">
+        <div class="ls-dlbg">
+        <div class="ls-dl">
+          <div style="display:flex;flex-direction:column;gap:18px;align-items:flex-start">
+            <div class="ls-eyebrow">Android app</div>
+            <h2>Get LeafSpectra for Android.</h2>
+            <p class="ls-lead">LeafSpectra is distributed as an official APK installer from this page.</p>
+            <x-if data-if="hasApk">
+              <div style="display:flex;flex-direction:column;gap:8px;width:100%;align-items:flex-start">
+                <a class="ls-btn" href="apk.txt" data-b-href="{{apkUrl}}" download="apk.txt" data-b-download="{{apkName}}">Download for Android</a>
+                <x-if data-if="apkTest">
+                  <p class="ls-note">Test download only — Android APK coming soon. The file you get (apk.txt) is an empty text file, not an Android installer.</p>
+                </x-if>
+              </div>
+            </x-if>
+            <x-if data-if="noApk" hidden="">
+              <div style="display:flex;flex-direction:column;gap:8px;width:100%;align-items:flex-start">
+                <button class="ls-btn" aria-disabled="true">APK not yet available — coming soon</button>
+                <p class="ls-note">The download button will link to the official installer once it is released.</p>
+              </div>
+            </x-if>
+            <div class="ls-facts" style="width:100%">
+              <div class="ls-fact"><div class="k">App version</div><div class="v"><x-t data-t="{{appVersion}}">To be announced</x-t></div></div>
+              <div class="ls-fact"><div class="k">Minimum Android version</div><div class="v"><x-t data-t="{{minAndroid}}">To be announced</x-t></div></div>
+              <div class="ls-fact"><div class="k">APK file size</div><div class="v"><x-t data-t="{{apkSize}}">To be announced</x-t></div></div>
+            </div>
+            <div>
+              <h3 style="margin-bottom:8px">How to install</h3>
+              <ol style="margin:0;padding-left:22px;color:var(--muted)">
+                <li>Download the APK file from this page onto your Android phone.</li>
+                <li>Open the downloaded file. If Android asks, allow your browser or file manager to install apps.</li>
+                <li>Follow the on-screen steps, then open LeafSpectra and create your account.</li>
+              </ol>
+            </div>
+            <p class="ls-note">An internet connection is required: accounts, recommendations, weather-aware advice, leaf-image analysis and Leafity all rely on LeafSpectra's online services.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div class="ls-duo">
+              <div class="ls-phone"><x-dc data-dc="PhoneMockup" data-props-tmpl="{&quot;screen&quot;:&quot;home&quot;,&quot;tilt&quot;:&quot;{{minusTwo}}&quot;}">
+
+<div class="pm pm-float" data-b-class="pm {{floatCls}}" style="rotate:-2deg" data-b-style="rotate:{{tiltDeg}}" role="img" aria-label="Concept preview (not a real screenshot) of the garden home screen" data-b-aria-label="{{ariaLabel}}">
+  <div class="pm-body"></div>
+  <div class="pm-btn" style="top:22%;height:9%"></div>
+  <div class="pm-btn" style="top:34%;height:5%"></div>
+  <div class="pm-screen">
+    <div class="pm-cam"></div>
+    <x-if data-if="hasImage" hidden="">
+      <img class="pm-img" data-b-src="{{image}}" alt="">
+    </x-if>
+    <x-if data-if="isHome">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">My garden</p>
+        <div class="pm-card" style="background:#ecdcbd">
+          <div class="pm-row" style="align-items:flex-end;gap:3cqw">
+            <div class="pm-pot"><div class="pm-leaf"></div><div class="pm-clay"></div></div>
+            <div class="pm-pot"><div class="pm-leaf" style="width:36%"></div><div class="pm-clay"></div></div>
+            <div class="pm-pot"><div class="pm-leaf" style="width:24%"></div><div class="pm-clay"></div></div>
+          </div>
+          <div class="pm-bar" style="background:#b98a56;height:2.6cqw"></div>
+        </div>
+        <div class="pm-card">
+          <div class="pm-t">Next little step</div>
+          <div class="pm-bar g" style="width:92%"></div>
+          <div class="pm-bar g" style="width:64%"></div>
+        </div>
+      </div>
+    </x-if>
+    <x-if data-if="isGrow" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">What can I grow?</p>
+        <div class="pm-s">Based on your growing setup</div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:85%"></div></div></div></div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:70%"></div></div></div></div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Vegetable option</div><div class="pm-bar" style="width:78%"></div></div></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isGuide" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Growing guide</p>
+        <div class="pm-row" style="flex-wrap:wrap;gap:2.4cqw"><span class="pm-chip">Seed</span><span class="pm-chip on">Sprout</span><span class="pm-chip">Growing</span><span class="pm-chip">Harvest</span></div>
+        <div class="pm-card"><div class="pm-t">Step 1</div><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:72%"></div></div>
+        <div class="pm-card"><div class="pm-t">Step 2</div><div class="pm-bar" style="width:88%"></div><div class="pm-bar" style="width:56%"></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isCare" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Care records</p>
+        <div class="pm-card">
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw;background:#91be58"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw;background:#91be58"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+          <div class="pm-row"><div class="pm-dot" style="width:8cqw"></div><div class="pm-t" style="flex:1">Care task</div><div class="pm-s">Date</div></div>
+        </div>
+        <div class="pm-card" style="background:#e1efcb"><div class="pm-t">Reminder</div><div class="pm-bar g" style="width:80%"></div></div>
+      </div>
+    </x-if>
+    <x-if data-if="isObserve" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Guided observation</p>
+        <div style="flex:1;min-height:0;border-radius:6cqw;background:#3d4a34;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="width:62%;aspect-ratio:.8;border:1.2cqw dashed #e1efcb;border-radius:60% 60% 60% 60% / 70% 70% 40% 40%"></div>
+          <div style="position:absolute;left:0;right:0;bottom:6%;text-align:center;font-size:5.6cqw;font-weight:800;color:#fffbf2">Fit one leaf inside the guide</div>
+        </div>
+        <div style="align-self:center;width:17cqw;aspect-ratio:1;border-radius:50%;background:#fffbf2;border:1.6cqw solid #91be58"></div>
+      </div>
+    </x-if>
+    <x-if data-if="isMonitor" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Changes over time</p>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot" style="border-radius:4cqw"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Observation</div><div class="pm-bar" style="width:80%"></div></div></div></div>
+        <div class="pm-card"><div class="pm-row"><div class="pm-dot" style="border-radius:4cqw"></div><div style="flex:1;display:flex;flex-direction:column;gap:2.4cqw"><div class="pm-t">Observation</div><div class="pm-bar" style="width:66%"></div></div></div></div>
+        <div class="pm-s" style="text-align:center">Visible changes only — not a diagnosis</div>
+      </div>
+    </x-if>
+    <x-if data-if="isLeafity" hidden="">
+      <div class="pm-pad">
+        <div class="pm-tag">Concept preview</div>
+        <p class="pm-h">Ask Leafity</p>
+        <div class="pm-row" style="align-items:flex-start"><div class="pm-dot" style="width:10cqw;background:#91be58"></div><div class="pm-card" style="flex:1;border-radius:2cqw 6cqw 6cqw 6cqw"><div class="pm-bar" style="width:90%"></div><div class="pm-bar" style="width:60%"></div></div></div>
+        <div class="pm-card" style="align-self:flex-end;width:62%;background:#e1efcb;border-radius:6cqw 2cqw 6cqw 6cqw"><div class="pm-bar g" style="width:86%"></div></div>
+        <div class="pm-row" style="align-items:flex-start"><div class="pm-dot" style="width:10cqw;background:#91be58"></div><div class="pm-card" style="flex:1;border-radius:2cqw 6cqw 6cqw 6cqw"><div class="pm-bar" style="width:94%"></div><div class="pm-bar" style="width:78%"></div><div class="pm-bar" style="width:40%"></div></div></div>
+        <div style="margin-top:auto" class="pm-card"><div class="pm-s">English · Filipino</div></div>
+      </div>
+    </x-if>
+  </div>
+</div>
+</x-dc></div>
+              <div class="ls-spot" data-ls="dl-spot" style="width:clamp(96px,11vw,150px)"></div>
+            </div>
+            <p class="ls-note" style="text-align:center">Concept preview — not a screenshot of the finished app.</p>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+    <section id="faq" class="ls-sec" data-ls-sec="faq">
+      <div class="ls-wrap">
+        <div class="ls-head" style="align-items:center;text-align:center">
+          <div class="ls-eyebrow">FAQ</div>
+          <h2>Questions beginners often ask.</h2>
+        </div>
+        <div class="ls-faqgrid">
+        <div class="ls-faq" data-ls="faq-list">
+          <details><summary>What is LeafSpectra?</summary><p>LeafSpectra is an online planting and plant-care assistant with visual monitoring. It helps you choose vegetables, follow beginner-friendly growing guidance, keep care records, and look at how your plants' leaves visibly change over time.</p></details>
+          <details><summary>Who is the app for?</summary><p>It is designed for novice home vegetable growers — people growing a few vegetables at home who want simple, step-by-step help.</p></details>
+          <details><summary>Is it available on Android?</summary><p>Yes, LeafSpectra's main product is an Android app. It will be offered here as an official APK installer once the release is ready.</p></details>
+          <details><summary>Do I need an internet connection?</summary><p>Yes. The app's main functions run on online services, so an internet connection is required for accounts, recommendations, weather-aware advice, leaf-image analysis and Leafity.</p></details>
+          <details><summary>Does LeafSpectra diagnose plant diseases?</summary><p>No. LeafSpectra describes visible leaf changes from guided photos for the vegetables it supports. It does not give confirmed disease diagnoses, does not identify pests automatically, and does not prescribe chemical treatments. It also does not use soil-moisture sensors or automatic watering equipment.</p></details>
+          <details><summary>How does Leafity help?</summary><p>Leafity is a conversational plant-care companion inside the app, in English and Filipino. Leafity explains planting information and care guidance in simple words and points you to your next small step.</p></details>
+          <details><summary>How do I download and install the app?</summary><p>When the installer is released, use the Download button on this page to get the APK on your Android phone, open the file, allow the installation if Android asks, and follow the steps on screen.</p></details>
+        </div>
+        <div class="ls-faqstage" data-ls="faq-stage">
+          <x-if data-if="noWebgl" hidden="">
+            <div class="ls-fallback">Leafity keeps you company here in 3D when your browser supports it.</div>
+          </x-if>
+        </div>
+        </div>
+        <div class="ls-perch" data-ls="foot-spot" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+  <footer class="ls-foot" data-ls-sec="footer">
+    <div class="in">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span class="ls-brand" style="--h:46px"><img src="/brand/Group%202.svg" alt="LeafSpectra" width="487" height="171"></span>
+        <p style="max-width:44ch">An online planting and plant-care assistant with visual monitoring for novice home vegetable growers.</p>
+      </div>
+      <nav aria-label="Footer" style="display:flex;flex-direction:column;gap:8px">
+        <a href="#home">Home</a><a href="#features">Features</a><a href="#how">How It Works</a><a href="#leafity">Meet Leafity</a><a href="#faq">FAQ</a><a href="#download">Download App</a>
+      </nav>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <p style="font-weight:800">A college capstone project</p>
+        <p>Team, institution, release and contact details will be added here once confirmed.</p>
+      </div>
+    </div>
+  </footer>
+</div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
